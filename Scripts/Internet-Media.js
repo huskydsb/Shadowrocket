@@ -110,7 +110,7 @@ function getArgs() {
     );
 }
 
-
+// 檢測 chatgpt
 async function check_chatgpt() {
     let inner_check_web = () => {
         return new Promise((resolve, reject) => {
@@ -120,7 +120,8 @@ async function check_chatgpt() {
             }
             $httpClient.get(option, function(error, response, data) {
                 if (error || response.status !== 200) {
-                    reject(`Error: ${error || response.status}`);
+                    console.log(`Error fetching web check: ${error || response.status}`);
+                    reject('N/A');
                     return;
                 }
 
@@ -150,7 +151,8 @@ async function check_chatgpt() {
             }
             $httpClient.get(option, function(error, response, data) {
                 if (error || response.status !== 200) {
-                    reject(`Error: ${error || response.status}`);
+                    console.log(`Error fetching android check: ${error || response.status}`);
+                    reject('N/A');
                     return;
                 }
 
@@ -165,22 +167,20 @@ async function check_chatgpt() {
         });
     }
 
-    let check_result = 'ChatGPT\u2009➟ ';
+    let check_result = 'ChatGPT ➟ ';
 
     try {
         const [webResult, androidResult] = await Promise.all([inner_check_web(), inner_check_android()]);
-        console.log("Web Result:", webResult);
-        console.log("Android Result:", androidResult);
-
+        
         if (webResult.status === 'Available' && androidResult === 'Client Available') {
-            check_result += `✅\u2009${webResult.region}`;
+            check_result += `✅ ${webResult.region}`;
         } else if (webResult.status === 'Available' && androidResult === 'Client Not Available') {
-            check_result += `⚠️\u2009${webResult.region}`;
+            check_result += `⚠️ ${webResult.region}`;
         } else {
             check_result += '❌';
         }
     } catch (error) {
-        console.log("Error caught:", error); // 显示详细错误信息
+        console.log("Error in check_chatgpt:", error);
         check_result += 'N/A';
     }
 
