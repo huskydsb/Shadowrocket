@@ -125,7 +125,7 @@ function checkDone() {
     completedRequests++;
     if (completedRequests === 2) {
         // 合并通知内容
-        let message = `YouTube CDN：检测结果 - ${youTubeCDNStatus}\nYouTube Premium：检测结果 - ${youTubePremiumStatus}`;
+        let message = `YouTube CDN： ${youTubeCDNStatus}\nYouTube Premium： ${youTubePremiumStatus}`;
         notify("YouTube 检测", message); // 发送合并的通知
         $done(); // 结束执行
     }
