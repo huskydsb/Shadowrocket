@@ -1,3 +1,5 @@
+// Disney+ 检测
+// 时间：2024-10-16 17:18:51
 // 定义 Disney+ API 的基础 URL
 const DISNEY_LOCATION_BASE_URL = 'https://disney.api.edge.bamgrid.com/graph/v1/device/graphql';
 
@@ -38,81 +40,83 @@ const flags = new Map([
 // 定义检测 Disney+ 支持情况的函数
 function disneyLocation() {
     return new Promise((resolve, reject) => {
-        // 定义请求参数
         let params = {
-            url: DISNEY_LOCATION_BASE_URL, // 请求 URL
-            timeout: 5000, // 请求超时设置为 5000 毫秒
+            url: DISNEY_LOCATION_BASE_URL,
+            timeout: 10000, // 增加超时时间到 10 秒
             headers: {
-                'Accept-Language': 'en', // 请求接受的语言
-                "Authorization": 'ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84', // 授权信息
-                'Content-Type': 'application/json', // 请求体类型
-                'User-Agent': 'UA' // 用户代理
+                'Accept-Language': 'en',
+                "Authorization": '你的_token', // 替换为有效的 token
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
             },
-            body: JSON.stringify({ // 请求体
-                query: 'mutation registerDevice($input: RegisterDeviceInput!) { registerDevice(registerDevice: $input) { grant { grantType assertion } } }', // GraphQL 查询
-                variables: { // 查询变量
+            body: JSON.stringify({
+                query: 'mutation registerDevice($input: RegisterDeviceInput!) { registerDevice(registerDevice: $input) { grant { grantType assertion } } }',
+                variables: {
                     input: {
-                        applicationRuntime: 'chrome', // 应用运行时
-                        attributes: { // 设备属性
-                            browserName: 'chrome', // 浏览器名称
-                            browserVersion: '94.0.4606', // 浏览器版本
-                            manufacturer: 'microsoft', // 制造商
-                            model: null, // 设备型号
-                            operatingSystem: 'windows', // 操作系统
-                            operatingSystemVersion: '10.0', // 操作系统版本
-                            osDeviceIds: [], // 设备 ID
+                        applicationRuntime: 'chrome',
+                        attributes: {
+                            browserName: 'chrome',
+                            browserVersion: '94.0.4606',
+                            manufacturer: 'microsoft',
+                            model: null,
+                            operatingSystem: 'windows',
+                            operatingSystemVersion: '10.0',
+                            osDeviceIds: [],
                         },
-                        deviceFamily: 'browser', // 设备家族
-                        deviceLanguage: 'en', // 设备语言
-                        deviceProfile: 'windows', // 设备配置
+                        deviceFamily: 'browser',
+                        deviceLanguage: 'en',
+                        deviceProfile: 'windows',
                     },
                 },
             }),
         };
 
-        // 发送 POST 请求
-        $httpClient.post(params, (errormsg, response, data) => {
-            console.log("----------Disney+ 检测--------------"); // 日志输出请求开始
-            if (errormsg) { // 检查是否有错误
-                const message = "Disney+: 检测失败 ❗️"; // 错误消息
-                console.log(message); // 日志输出错误消息
-                $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                resolve("disney request failed:" + errormsg); // 解析错误并结束
-                return; // 结束函数执行
-            }
-            if (response.status == 200) { // 检查响应状态
-                console.log("Disney+ 请求结果: " + response.status); // 输出请求结果状态
-                let resData = JSON.parse(data); // 解析响应数据
-                if (resData?.extensions?.sdk?.session != null) { // 检查 session 是否存在
-                    let {
-                        inSupportedLocation, // 是否在支持的位置
-                        location: { countryCode }, // 获取国家代码
-                    } = resData?.extensions?.sdk?.session; // 解构赋值
+        console.log("----------开始发送请求--------------"); // 日志输出请求开始
 
-                    if (inSupportedLocation) { // 如果支持
-                        const countryFlag = flags.get(countryCode.toUpperCase()) || "🏳️"; // 获取对应的国旗
-                        const message = `Disney+: 支持 ➟ ${countryFlag} (${countryCode}) 🎉`; // 支持消息
-                        console.log(message); // 日志输出支持消息
-                        $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                        resolve({ inSupportedLocation, countryCode }); // 解析支持结果
-                    } else { // 如果不支持
-                        const countryFlag = flags.get(countryCode.toUpperCase()) || "🏳️"; // 获取对应的国旗
-                        const message = `Disney+: 即将登陆 ➟ ${countryFlag} ⚠️`; // 即将登陆消息
-                        console.log(message); // 日志输出即将登陆消息
-                        $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                        resolve(); // 结束解析
+        $httpClient.post(params, (errormsg, response, data) => {
+            console.log("----------请求结束--------------"); // 日志输出请求结束
+
+            if (errormsg) {
+                const message = "Disney+: 检测失败 ❗️";
+                console.log(message);
+                $notification.post("Disney+ 检测结果", "", message);
+                reject("disney request failed:" + errormsg);
+                return;
+            }
+
+            if (response.status === 200) {
+                console.log("Disney+ 请求结果: " + response.status);
+                let resData = JSON.parse(data);
+                if (resData?.extensions?.sdk?.session != null) {
+                    let {
+                        inSupportedLocation,
+                        location: { countryCode },
+                    } = resData?.extensions?.sdk?.session;
+
+                    if (inSupportedLocation) {
+                        const countryFlag = flags.get(countryCode.toUpperCase()) || "🏳️";
+                        const message = `Disney+: 支持 ➟ ${countryFlag} (${countryCode}) 🎉`;
+                        console.log(message);
+                        $notification.post("Disney+ 检测结果", "", message);
+                        resolve({ inSupportedLocation, countryCode });
+                    } else {
+                        const countryFlag = flags.get(countryCode.toUpperCase()) || "🏳️";
+                        const message = `Disney+: 即将登陆 ➟ ${countryFlag} ⚠️`;
+                        console.log(message);
+                        $notification.post("Disney+ 检测结果", "", message);
+                        resolve();
                     }
-                } else { // 如果没有 session
-                    const message = "Disney+: 未支持 🚫 "; // 未支持消息
-                    console.log(message); // 日志输出未支持消息
-                    $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                    resolve(); // 结束解析
+                } else {
+                    const message = "Disney+: 未支持 🚫 ";
+                    console.log(message);
+                    $notification.post("Disney+ 检测结果", "", message);
+                    resolve();
                 }
-            } else { // 如果响应状态不是 200
-                const message = "Disney+: 检测失败 ❗️"; // 错误消息
-                console.log(message); // 日志输出错误消息
-                $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                resolve(); // 结束解析
+            } else {
+                const message = "Disney+: 检测失败 ❗️";
+                console.log(message);
+                $notification.post("Disney+ 检测结果", "", message);
+                resolve();
             }
         });
     });
