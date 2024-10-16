@@ -105,14 +105,14 @@ function disneyLocation() {
                         resolve(); // 结束解析
                     }
                 } else { // 如果没有 session
-                    const message = "Disney+: 未支持 🚫 "; // 未支持消息
-                    console.log(message); // 日志输出未支持消息
+                    const message = "Disney+: 检测失败 ❗️"; // 错误消息
+                    console.log(message); // 日志输出错误消息
                     $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
                     resolve(); // 结束解析
                 }
             } else { // 如果响应状态不是 200
-                const message = "Disney+: 检测失败 ❗️"; // 错误消息
-                console.log(message); // 日志输出错误消息
+                const message = "Disney+: 请求失败 ❗️"; // 请求失败消息
+                console.log(message); // 日志输出请求失败消息
                 $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
                 resolve(); // 结束解析
             }
@@ -120,5 +120,15 @@ function disneyLocation() {
     });
 }
 
-// 调用函数执行 Disney+ 支持检测
-disneyLocation();
+// 设置超时处理
+const timeout = setTimeout(() => {
+    console.log("Disney+: 请求超时 ❗️"); // 日志输出超时消息
+    $notification.post("Disney+ 检测结果", "", "请求超时 ❗️"); // 发送 iOS 通知
+    // 可以在这里手动清理资源
+}, 10000); // 设置为 10 秒
+
+// 执行 Disney+ 检测
+disneyLocation().then(() => {
+    clearTimeout(timeout); // 请求完成后清除计时器
+    console.log("脚本执行完成。"); // 日志输出完成消息
+});
