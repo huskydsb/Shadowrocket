@@ -114,10 +114,10 @@ Promise.all([MediaUnlockTest_YouTube_Premium(), RegionTest_YouTubeCDN()]).then(r
     const youTubePremiumStatus = results[0];
     
     const combinedMessage = `YouTube CDN: ${youTubeCDNStatus}\nYouTube Premium: ${youTubePremiumStatus}`;
-    notify("YouTube 检测", combinedMessage);
+    notify("YouTube 检测结果", combinedMessage);
     $done(); // 结束执行
 }).catch(error => {
     log(`发生错误: ${error}`);
-    notify("YouTube 检测", "检测失败");
+    notify("YouTube 检测结果", "检测失败");
     $done(); // 结束执行
 });
