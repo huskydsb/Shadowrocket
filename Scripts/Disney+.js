@@ -22,7 +22,7 @@ const flags = new Map([
     ["EA", "🇪🇦"], ["EC", "🇪🇨"], ["EE", "🇪🇪"], ["EG", "🇪🇬"],
     ["EH", "🇪🇭"], ["ER", "🇪🇷"], ["ES", "🇪🇸"], ["ET", "🇪🇹"],
     ["EU", "🇪🇺"], ["FI", "🇫🇮"], ["FJ", "🇫🇯"], ["FK", "🇫🇰"],
-    ["FM", "🇫🇲"], ["FO", "🇫 "], ["FR", "🇫🇷"], ["GA", "🇬🇦"],
+    ["FM", "🇫🇲"], ["FO", "🇫"], ["FR", "🇫🇷"], ["GA", "🇬🇦"],
     ["GB", "🇬🇧"], ["HK", "🇭🇰"], ["HU", "🇭🇺"], ["ID", "🇮🇩"],
     ["IE", "🇮🇪"], ["IL", "🇮🇱"], ["IM", "🇮🇲"], ["IN", "🇮🇳"],
     ["IS", "🇮🇸"], ["IT", "🇮🇹"], ["JP", "🇯🇵"], ["KR", "🇰🇷"],
@@ -79,7 +79,7 @@ function disneyLocation() {
                 const message = "Disney+: 检测失败 ❗️"; // 错误消息
                 console.log(message); // 日志输出错误消息
                 $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                resolve("disney request failed:" + errormsg); // 解析错误并结束
+                $done(); // 结束脚本
                 return; // 结束函数执行
             }
             if (response.status == 200) { // 检查响应状态
@@ -96,39 +96,29 @@ function disneyLocation() {
                         const message = `Disney+: 支持 ➟ ${countryFlag} (${countryCode}) 🎉`; // 支持消息
                         console.log(message); // 日志输出支持消息
                         $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                        resolve({ inSupportedLocation, countryCode }); // 解析支持结果
+                        $done(); // 结束脚本
                     } else { // 如果不支持
                         const countryFlag = flags.get(countryCode.toUpperCase()) || "🏳️"; // 获取对应的国旗
                         const message = `Disney+: 即将登陆 ➟ ${countryFlag} ⚠️`; // 即将登陆消息
                         console.log(message); // 日志输出即将登陆消息
                         $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                        resolve(); // 结束解析
+                        $done(); // 结束脚本
                     }
                 } else { // 如果没有 session
-                    const message = "Disney+: 检测失败 ❗️"; // 错误消息
+                    const message = "Disney+: 响应数据格式错误 ❗️"; // 数据格式错误消息
                     console.log(message); // 日志输出错误消息
                     $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                    resolve(); // 结束解析
+                    $done(); // 结束脚本
                 }
             } else { // 如果响应状态不是 200
                 const message = "Disney+: 请求失败 ❗️"; // 请求失败消息
                 console.log(message); // 日志输出请求失败消息
                 $notification.post("Disney+ 检测结果", "", message); // 发送 iOS 通知
-                resolve(); // 结束解析
+                $done(); // 结束脚本
             }
         });
     });
 }
 
-// 设置超时处理
-const timeout = setTimeout(() => {
-    console.log("Disney+: 请求超时 ❗️"); // 日志输出超时消息
-    $notification.post("Disney+ 检测结果", "", "请求超时 ❗️"); // 发送 iOS 通知
-    // 可以在这里手动清理资源
-}, 10000); // 设置为 10 秒
-
-// 执行 Disney+ 检测
-disneyLocation().then(() => {
-    clearTimeout(timeout); // 请求完成后清除计时器
-    console.log("脚本执行完成。"); // 日志输出完成消息
-});
+// 调用检测函数
+disneyLocation();
