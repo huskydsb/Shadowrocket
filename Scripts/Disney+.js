@@ -99,24 +99,28 @@ function disneyLocation() {
                         console.log(message);
                         $notification.post("Disney+ 检测结果", "", message);
                         resolve({ inSupportedLocation, countryCode });
+                        return; // 确保正常结束
                     } else {
                         const countryFlag = flags.get(countryCode.toUpperCase()) || "🏳️";
                         const message = `Disney+: 即将登陆 ➟ ${countryFlag} ⚠️`;
                         console.log(message);
                         $notification.post("Disney+ 检测结果", "", message);
                         resolve();
+                        return; // 确保正常结束
                     }
                 } else {
                     const message = "Disney+: 未支持 🚫 ";
                     console.log(message);
                     $notification.post("Disney+ 检测结果", "", message);
                     resolve();
+                    return; // 确保正常结束
                 }
             } else {
                 const message = "Disney+: 检测失败 ❗️";
                 console.log(message);
                 $notification.post("Disney+ 检测结果", "", message);
                 resolve();
+                return; // 确保正常结束
             }
         });
     });
