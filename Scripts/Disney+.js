@@ -45,7 +45,7 @@ async function disneyLocation() {
             url: DISNEY_LOCATION_BASE_URL,
             headers: {
                 'Accept-Language': 'en',
-                "Authorization": '你的授权信息', // 请替换为你的授权信息
+                "Authorization": 'ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84', // 请替换为你的授权信息
                 'Content-Type': 'application/json',
                 'User-Agent': 'UA'
             },
