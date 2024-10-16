@@ -45,7 +45,7 @@ function disneyLocation() {
             timeout: 10000, // 增加超时时间到 10 秒
             headers: {
                 'Accept-Language': 'en',
-                "Authorization": '你的_token', // 替换为有效的 token
+                "Authorization": 'ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84', // 替换为有效的 token
                 'Content-Type': 'application/json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
             },
