@@ -72,21 +72,21 @@ async function WebTest_OpenAI() {
                     log(`VPN 检测响应: ${data2}`);
 
                     if (!tmpresult1 && !tmpresult2) {
-                        const successMsg = "ChatGPT: 是的，服务可用。";
+                        const successMsg = "ChatGPT: 恭喜你，服务全部可用。";
                         log(successMsg);
-                        notify("ChatGPT 状态", successMsg);
+                        notify("ChatGPT 检测结果", successMsg);
                     } else if (tmpresult1 && tmpresult2) {
-                        const noMsg = "ChatGPT: 不，服务因国家和 VPN 限制而不可用。";
+                        const noMsg = "ChatGPT: 对不起，服务因国家和 VPN 限制而不可用。";
                         log(noMsg);
-                        notify("ChatGPT 状态", noMsg);
+                        notify("ChatGPT 检测结果", noMsg);
                     } else if (!tmpresult1 && tmpresult2) {
-                        const browserMsg = "ChatGPT: 不，服务仅限使用网页浏览器（VPN 限制）。";
+                        const browserMsg = "ChatGPT: 对不起，服务仅限使用网页浏览器（VPN 限制）。";
                         log(browserMsg);
-                        notify("ChatGPT 状态", browserMsg);
+                        notify("ChatGPT 检测结果", browserMsg);
                     } else if (tmpresult1 && !tmpresult2) {
-                        const appMsg = "ChatGPT: 不，服务仅限使用移动应用（国家限制）。";
+                        const appMsg = "ChatGPT: 对不起，服务仅限使用移动应用（国家限制）。";
                         log(appMsg);
-                        notify("ChatGPT 状态", appMsg);
+                        notify("ChatGPT 检测结果", appMsg);
                     } else {
                         const unknownMsg = "ChatGPT: 检测失败（未知错误）。";
                         log(unknownMsg);
@@ -95,9 +95,9 @@ async function WebTest_OpenAI() {
                     $done(); // 结束执行
                 });
             } else {
-                const countryRestrictionMsg = "ChatGPT: 该服务在您的国家不可用。";
+                const countryRestrictionMsg = "ChatGPT: 对不起，该服务在您的国家不可用。";
                 log(countryRestrictionMsg);
-                notify("ChatGPT 状态", countryRestrictionMsg);
+                notify("ChatGPT 检测结果", countryRestrictionMsg);
                 $done(); // 结束执行
             }
         });
