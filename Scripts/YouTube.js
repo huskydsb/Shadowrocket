@@ -37,6 +37,7 @@ function MediaUnlockTest_YouTube_Premium() {
         if (error) {
             log("YouTube Premium: Failed (Network Connection)");
             notify("YouTube Premium Status", "Failed (Network Connection)");
+            $done(); // 结束执行
             return;
         }
 
@@ -44,6 +45,7 @@ function MediaUnlockTest_YouTube_Premium() {
         if (isCN) {
             log("YouTube Premium: No (Region: CN)");
             notify("YouTube Premium Status", "No (Region: CN)");
+            $done(); // 结束执行
             return;
         }
 
@@ -54,6 +56,7 @@ function MediaUnlockTest_YouTube_Premium() {
         if (isNotAvailable) {
             log("YouTube Premium: No");
             notify("YouTube Premium Status", "No");
+            $done(); // 结束执行
             return;
         }
 
@@ -66,6 +69,7 @@ function MediaUnlockTest_YouTube_Premium() {
             log("YouTube Premium: Failed (Error: PAGE ERROR)");
             notify("YouTube Premium Status", "Failed (Error: PAGE ERROR)");
         }
+        $done(); // 结束执行
     });
 }
 
@@ -83,6 +87,7 @@ function RegionTest_YouTubeCDN() {
         if (error) {
             log("YouTube CDN: Failed (Network Connection)");
             notify("YouTube CDN Status", "Failed (Network Connection)");
+            $done(); // 结束执行
             return;
         }
 
@@ -92,6 +97,7 @@ function RegionTest_YouTubeCDN() {
         if (output.length === 0) {
             log("YouTube CDN: Failed (No valid data found before 'Debug Info:')");
             notify("YouTube CDN Status", "Failed (No valid data found before 'Debug Info:')");
+            $done(); // 结束执行
             return;
         }
 
@@ -101,6 +107,7 @@ function RegionTest_YouTubeCDN() {
 
         log(`YouTube CDN Response Data:\n${location}`);
         notify("YouTube CDN Response", location);
+        $done(); // 结束执行
     });
 }
 
