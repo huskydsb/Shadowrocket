@@ -32,6 +32,7 @@ async function WebTest_OpenAI() {
                 const errorMsg = "ChatGPT: 检测失败 (网络连接问题 - Cookie 请求)";
                 log(errorMsg);
                 notify("ChatGPT 错误", errorMsg);
+                $done(); // 结束执行
                 return;
             }
 
@@ -62,6 +63,7 @@ async function WebTest_OpenAI() {
                         const errorMsg = "ChatGPT: 检测失败 (网络连接问题 - VPN 请求)";
                         log(errorMsg);
                         notify("ChatGPT 错误", errorMsg);
+                        $done(); // 结束执行
                         return;
                     }
 
@@ -90,11 +92,13 @@ async function WebTest_OpenAI() {
                         log(unknownMsg);
                         notify("ChatGPT 错误", unknownMsg);
                     }
+                    $done(); // 结束执行
                 });
             } else {
                 const countryRestrictionMsg = "ChatGPT: 该服务在您的国家不可用。";
                 log(countryRestrictionMsg);
                 notify("ChatGPT 状态", countryRestrictionMsg);
+                $done(); // 结束执行
             }
         });
 
@@ -102,6 +106,7 @@ async function WebTest_OpenAI() {
         const errorMsg = `ChatGPT: 检测失败（错误: ${error.message}）`;
         log(errorMsg);
         notify("ChatGPT 错误", errorMsg);
+        $done(); // 结束执行
     }
 }
 
