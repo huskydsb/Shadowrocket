@@ -38,16 +38,17 @@ const flags = new Map([
 ]);
 
 // 定义检测 Disney+ 支持情况的函数
-function disneyLocation() {
-    return new Promise((resolve, reject) => {
-        let params = {
+async function disneyLocation() {
+    try {
+        // 请求参数和处理逻辑
+        const params = {
             url: DISNEY_LOCATION_BASE_URL,
-            timeout: 10000, // 增加超时时间到 10 秒
+            timeout: 10000, // 超时时间设置为 10 秒
             headers: {
                 'Accept-Language': 'en',
-                "Authorization": 'ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84', // 替换为有效的 token
+                "Authorization": 'ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84', // 使用你的授权信息
                 'Content-Type': 'application/json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
+                'User-Agent': 'UA'
             },
             body: JSON.stringify({
                 query: 'mutation registerDevice($input: RegisterDeviceInput!) { registerDevice(registerDevice: $input) { grant { grantType assertion } } }',
@@ -71,59 +72,32 @@ function disneyLocation() {
             }),
         };
 
-        console.log("----------开始发送请求--------------"); // 日志输出请求开始
+        const response = await $httpClient.post(params);
+        console.log("----------Disney+ 检测--------------");
+        console.log("Disney+ 请求结果: " + response.status);
 
-        $httpClient.post(params, (errormsg, response, data) => {
-            console.log("----------请求结束--------------"); // 日志输出请求结束
+        if (response.status !== 200) {
+            throw new Error("Disney+: 检测失败 ❗️");
+        }
 
-            if (errormsg) {
-                const message = "Disney+: 检测失败 ❗️";
-                console.log(message);
-                $notification.post("Disney+ 检测结果", "", message);
-                reject("disney request failed:" + errormsg);
-                return;
-            }
+        const resData = JSON.parse(response.data);
+        if (resData?.extensions?.sdk?.session) {
+            const { inSupportedLocation, location: { countryCode } } = resData.extensions.sdk.session;
+            const countryFlag = flags.get(countryCode.toUpperCase()) || "🏳️";
+            const message = inSupportedLocation
+                ? `Disney+: 支持 ➟ ${countryFlag} (${countryCode}) 🎉`
+                : `Disney+: 即将登陆 ➟ ${countryFlag} ⚠️`;
 
-            if (response.status === 200) {
-                console.log("Disney+ 请求结果: " + response.status);
-                let resData = JSON.parse(data);
-                if (resData?.extensions?.sdk?.session != null) {
-                    let {
-                        inSupportedLocation,
-                        location: { countryCode },
-                    } = resData?.extensions?.sdk?.session;
-
-                    if (inSupportedLocation) {
-                        const countryFlag = flags.get(countryCode.toUpperCase()) || "🏳️";
-                        const message = `Disney+: 支持 ➟ ${countryFlag} (${countryCode}) 🎉`;
-                        console.log(message);
-                        $notification.post("Disney+ 检测结果", "", message);
-                        resolve({ inSupportedLocation, countryCode });
-                        return; // 确保正常结束
-                    } else {
-                        const countryFlag = flags.get(countryCode.toUpperCase()) || "🏳️";
-                        const message = `Disney+: 即将登陆 ➟ ${countryFlag} ⚠️`;
-                        console.log(message);
-                        $notification.post("Disney+ 检测结果", "", message);
-                        resolve();
-                        return; // 确保正常结束
-                    }
-                } else {
-                    const message = "Disney+: 未支持 🚫 ";
-                    console.log(message);
-                    $notification.post("Disney+ 检测结果", "", message);
-                    resolve();
-                    return; // 确保正常结束
-                }
-            } else {
-                const message = "Disney+: 检测失败 ❗️";
-                console.log(message);
-                $notification.post("Disney+ 检测结果", "", message);
-                resolve();
-                return; // 确保正常结束
-            }
-        });
-    });
+            console.log(message);
+            $notification.post("Disney+ 检测结果", "", message);
+        } else {
+            throw new Error("Disney+: 未支持 🚫");
+        }
+    } catch (error) {
+        // 捕获错误并发送通知
+        console.error(error.message);
+        $notification.post("Disney+ 检测结果", "", error.message);
+    }
 }
 
 // 调用函数执行 Disney+ 支持检测
