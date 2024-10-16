@@ -42,7 +42,7 @@ function nfTest() {
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15',
             }
         };
-        
+
         console.log("\n开始请求 Netflix...");
 
         $httpClient.get(params, (errormsg, response, data) => {
@@ -52,7 +52,7 @@ function nfTest() {
             if (errormsg) {
                 console.log("❌ NF 请求失败:", JSON.stringify({ error: errormsg }, null, 2));
                 result["Netflix"] = "Netflix: 检测失败 ❗️";
-                $notification.post("Netflix 检测结果", result["Netflix"]);
+                $notification.post("Netflix 检测结果", result["Netflix"], "", "https://brand.netflix.com/favicon.ico");
                 $done(); // 结束脚本
                 resolve(errormsg);
                 return;
@@ -60,12 +60,12 @@ function nfTest() {
 
             if (response.status === 403) {
                 result["Netflix"] = "Netflix: 未支持 🚫";
-                $notification.post("Netflix 检测结果", result["Netflix"]);
+                $notification.post("Netflix 检测结果", result["Netflix"], "", "https://brand.netflix.com/favicon.ico");
                 $done(); // 结束脚本
                 resolve("403 Not Available");
             } else if (response.status === 404) {
                 result["Netflix"] = "Netflix: 支持自制剧集 ⚠️";
-                $notification.post("Netflix 检测结果", result["Netflix"]);
+                $notification.post("Netflix 检测结果", result["Netflix"], "", "https://brand.netflix.com/favicon.ico");
                 $done(); // 结束脚本
                 resolve("404 Not Found");
             } else if (response.status === 200) {
@@ -78,7 +78,7 @@ function nfTest() {
                 if (ourl === undefined) {
                     console.log("⚠️ 未知地区");
                     result["Netflix"] = "Netflix: 完整支持 ⟦未知地区⟧ 🎉";
-                    $notification.post("Netflix 检测结果", result["Netflix"]);
+                    $notification.post("Netflix 检测结果", result["Netflix"], "", "https://brand.netflix.com/favicon.ico");
                     $done(); // 结束脚本
                     resolve();
                 } else {
@@ -89,13 +89,13 @@ function nfTest() {
                         region = 'us';
                     }
                     result["Netflix"] = `Netflix: 完整支持 ⟦${flags.get(region.toUpperCase()) || '🇺 unknown'}⟧ 🎉`;
-                    $notification.post("Netflix 检测结果", result["Netflix"]);
+                    $notification.post("Netflix 检测结果", result["Netflix"], "", "https://brand.netflix.com/favicon.ico");
                     $done(); // 结束脚本
                     resolve(region);
                 }
             } else {
                 result["Netflix"] = "Netflix: 检测失败 ❗️";
-                $notification.post("Netflix 检测结果", result["Netflix"]);
+                $notification.post("Netflix 检测结果", result["Netflix"], "", "https://brand.netflix.com/favicon.ico");
                 $done(); // 结束脚本
                 resolve(response.status);
             }
@@ -109,4 +109,4 @@ nfTest().then(region => {
 }).catch(error => {
     console.error("\n发生错误:", JSON.stringify({ error: error }, null, 2));
     $done(); // 在这里结束脚本
-}); 
+});
