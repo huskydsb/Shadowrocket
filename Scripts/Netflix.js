@@ -18,7 +18,7 @@ const flags = new Map([
     ["EA", "🇪🇦"], ["EC", "🇪🇨"], ["EE", "🇪🇪"], ["EG", "🇪🇬"],
     ["EH", "🇪🇭"], ["ER", "🇪🇷"], ["ES", "🇪🇸"], ["ET", "🇪🇹"],
     ["EU", "🇪🇺"], ["FI", "🇫🇮"], ["FJ", "🇫🇯"], ["FK", "🇫🇰"],
-    ["FM", "🇫🇲"], ["FO", "🇫 "], ["FR", "🇫🇷"], ["GA", "🇬🇦"],
+    ["FM", "🇫🇲"], ["FO", "🇫"], ["FR", "🇫🇷"], ["GA", "🇬🇦"],
     ["GB", "🇬🇧"], ["HK", "🇭🇰"], ["HU", "🇭🇺"], ["ID", "🇮🇩"],
     ["IE", "🇮🇪"], ["IL", "🇮🇱"], ["IM", "🇮🇲"], ["IN", "🇮🇳"],
     ["IS", "🇮🇸"], ["IT", "🇮🇹"], ["JP", "🇯🇵"], ["KR", "🇰🇷"],
@@ -53,6 +53,7 @@ function nfTest() {
                 console.log("❌ NF 请求失败:", JSON.stringify({ error: errormsg }, null, 2));
                 result["Netflix"] = "Netflix: 检测失败 ❗️";
                 $notification.post("Netflix 检测结果", result["Netflix"]);
+                $done(); // 结束脚本
                 resolve(errormsg);
                 return;
             }
@@ -60,10 +61,12 @@ function nfTest() {
             if (response.status === 403) {
                 result["Netflix"] = "Netflix: 未支持 🚫";
                 $notification.post("Netflix 检测结果", result["Netflix"]);
+                $done(); // 结束脚本
                 resolve("403 Not Available");
             } else if (response.status === 404) {
                 result["Netflix"] = "Netflix: 支持自制剧集 ⚠️";
                 $notification.post("Netflix 检测结果", result["Netflix"]);
+                $done(); // 结束脚本
                 resolve("404 Not Found");
             } else if (response.status === 200) {
                 console.log("\n📦 NF 请求结果:", JSON.stringify(response.headers, null, 2));
@@ -76,6 +79,7 @@ function nfTest() {
                     console.log("⚠️ 未知地区");
                     result["Netflix"] = "Netflix: 完整支持 ⟦未知地区⟧ 🎉";
                     $notification.post("Netflix 检测结果", result["Netflix"]);
+                    $done(); // 结束脚本
                     resolve();
                 } else {
                     console.log("🌍 X-Originating-URL:", ourl);
@@ -86,11 +90,13 @@ function nfTest() {
                     }
                     result["Netflix"] = `Netflix: 完整支持 ⟦${flags.get(region.toUpperCase()) || '🇺 unknown'}⟧ 🎉`;
                     $notification.post("Netflix 检测结果", result["Netflix"]);
+                    $done(); // 结束脚本
                     resolve(region);
                 }
             } else {
                 result["Netflix"] = "Netflix: 检测失败 ❗️";
                 $notification.post("Netflix 检测结果", result["Netflix"]);
+                $done(); // 结束脚本
                 resolve(response.status);
             }
         });
@@ -99,6 +105,8 @@ function nfTest() {
 
 nfTest().then(region => {
     console.log("\n检测结果:", JSON.stringify(result, null, 2));
+    $done(); // 在这里结束脚本
 }).catch(error => {
     console.error("\n发生错误:", JSON.stringify({ error: error }, null, 2));
-});
+    $done(); // 在这里结束脚本
+}); 
