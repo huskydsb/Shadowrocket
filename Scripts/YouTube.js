@@ -1,6 +1,7 @@
 // 定义通知和日志函数
-function notify(title, message) {
+function notify(title, message, callback) {
     $notification.post(title, "", message);
+    if (callback) callback(); // 发送通知后调用回调
 }
 
 function log(message) {
@@ -36,16 +37,14 @@ function MediaUnlockTest_YouTube_Premium() {
     retryRequest(options, function (error, response, data) {
         if (error) {
             log("YouTube Premium: Failed (Network Connection)");
-            notify("YouTube Premium Status", "Failed (Network Connection)");
-            $done(); // 结束执行
+            notify("YouTube Premium Status", "Failed (Network Connection)", checkDone);
             return;
         }
 
         let isCN = data.includes('www.google.cn');
         if (isCN) {
             log("YouTube Premium: No (Region: CN)");
-            notify("YouTube Premium Status", "No (Region: CN)");
-            $done(); // 结束执行
+            notify("YouTube Premium Status", "No (Region: CN)", checkDone);
             return;
         }
 
@@ -55,8 +54,7 @@ function MediaUnlockTest_YouTube_Premium() {
 
         if (isNotAvailable) {
             log("YouTube Premium: No");
-            notify("YouTube Premium Status", "No");
-            $done(); // 结束执行
+            notify("YouTube Premium Status", "No", checkDone);
             return;
         }
 
@@ -64,12 +62,11 @@ function MediaUnlockTest_YouTube_Premium() {
 
         if (isAvailable) {
             log(`YouTube Premium: Yes (Region: ${region})`);
-            notify("YouTube Premium Status", `Yes (Region: ${region})`);
+            notify("YouTube Premium Status", `Yes (Region: ${region})`, checkDone);
         } else {
             log("YouTube Premium: Failed (Error: PAGE ERROR)");
-            notify("YouTube Premium Status", "Failed (Error: PAGE ERROR)");
+            notify("YouTube Premium Status", "Failed (Error: PAGE ERROR)", checkDone);
         }
-        $done(); // 结束执行
     });
 }
 
@@ -86,8 +83,7 @@ function RegionTest_YouTubeCDN() {
     retryRequest(options, function (error, response, data) {
         if (error) {
             log("YouTube CDN: Failed (Network Connection)");
-            notify("YouTube CDN Status", "Failed (Network Connection)");
-            $done(); // 结束执行
+            notify("YouTube CDN Status", "Failed (Network Connection)", checkDone);
             return;
         }
 
@@ -96,8 +92,7 @@ function RegionTest_YouTubeCDN() {
 
         if (output.length === 0) {
             log("YouTube CDN: Failed (No valid data found before 'Debug Info:')");
-            notify("YouTube CDN Status", "Failed (No valid data found before 'Debug Info:')");
-            $done(); // 结束执行
+            notify("YouTube CDN Status", "Failed (No valid data found before 'Debug Info:')", checkDone);
             return;
         }
 
@@ -106,9 +101,19 @@ function RegionTest_YouTubeCDN() {
         let location = match ? match[1] : "Unknown";
 
         log(`YouTube CDN Response Data:\n${location}`);
-        notify("YouTube CDN Response", location);
-        $done(); // 结束执行
+        notify("YouTube CDN Response", location, checkDone);
     });
+}
+
+// 用于跟踪请求完成的次数
+let completedRequests = 0;
+
+// 检查是否所有请求都已完成
+function checkDone() {
+    completedRequests++;
+    if (completedRequests === 2) {
+        $done(); // 结束执行
+    }
 }
 
 // 执行测试
