@@ -88,7 +88,7 @@ function nfTest() {
                     if (region === 'title') {
                         region = 'us';
                     }
-                    result["Netflix"] = `Netflix: 完整支持 ⟦${flags.get(region.toUpperCase()) || '🇺 unknown'}⟧ 🎉`;
+                    result["Netflix"] = `Netflix: 完整支持 ⟦${flags.get(region.toUpperCase()) || '🇺 unknown'}（${region.toUpperCase()}）⟧ 🎉`;
                     $notification.post("Netflix 检测结果", result["Netflix"]);
                     $done(); // 结束脚本
                     resolve(region);
@@ -109,4 +109,4 @@ nfTest().then(region => {
 }).catch(error => {
     console.error("\n发生错误:", JSON.stringify({ error: error }, null, 2));
     $done(); // 在这里结束脚本
-}); 
+});
