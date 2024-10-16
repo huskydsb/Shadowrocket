@@ -43,10 +43,9 @@ async function disneyLocation() {
         // 请求参数和处理逻辑
         const params = {
             url: DISNEY_LOCATION_BASE_URL,
-            timeout: 10000, // 超时时间设置为 10 秒
             headers: {
                 'Accept-Language': 'en',
-                "Authorization": 'ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84', // 使用你的授权信息
+                "Authorization": '你的授权信息', // 请替换为你的授权信息
                 'Content-Type': 'application/json',
                 'User-Agent': 'UA'
             },
@@ -72,7 +71,12 @@ async function disneyLocation() {
             }),
         };
 
-        const response = await $httpClient.post(params);
+        // 添加超时功能
+        const response = await Promise.race([
+            $httpClient.post(params), // 发起请求
+            new Promise((_, reject) => setTimeout(() => reject(new Error("请求超时 ❗️")), 10000)) // 10 秒超时
+        ]);
+
         console.log("----------Disney+ 检测--------------");
         console.log("Disney+ 请求结果: " + response.status);
 
