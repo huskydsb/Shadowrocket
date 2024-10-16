@@ -1,7 +1,6 @@
 // 定义通知和日志函数
-function notify(title, message, callback) {
+function notify(title, message) {
     $notification.post(title, "", message);
-    if (callback) callback(); // 发送通知后调用回调
 }
 
 function log(message) {
@@ -23,6 +22,10 @@ function retryRequest(options, callback, attempts = 3) {
     });
 }
 
+// YouTube 检测结果
+let youTubePremiumStatus = "未知";
+let youTubeCDNStatus = "未知";
+
 // YouTube Premium 检测函数
 function MediaUnlockTest_YouTube_Premium() {
     let options = {
@@ -37,14 +40,16 @@ function MediaUnlockTest_YouTube_Premium() {
     retryRequest(options, function (error, response, data) {
         if (error) {
             log("YouTube Premium: Failed (Network Connection)");
-            notify("YouTube Premium Status", "Failed (Network Connection)", checkDone);
+            youTubePremiumStatus = "Failed (Network Connection)";
+            checkDone();
             return;
         }
 
         let isCN = data.includes('www.google.cn');
         if (isCN) {
             log("YouTube Premium: No (Region: CN)");
-            notify("YouTube Premium Status", "No (Region: CN)", checkDone);
+            youTubePremiumStatus = "No (Region: CN)";
+            checkDone();
             return;
         }
 
@@ -54,7 +59,8 @@ function MediaUnlockTest_YouTube_Premium() {
 
         if (isNotAvailable) {
             log("YouTube Premium: No");
-            notify("YouTube Premium Status", "No", checkDone);
+            youTubePremiumStatus = "No";
+            checkDone();
             return;
         }
 
@@ -62,11 +68,13 @@ function MediaUnlockTest_YouTube_Premium() {
 
         if (isAvailable) {
             log(`YouTube Premium: Yes (Region: ${region})`);
-            notify("YouTube Premium Status", `Yes (Region: ${region})`, checkDone);
+            youTubePremiumStatus = `Yes (Region: ${region})`;
         } else {
             log("YouTube Premium: Failed (Error: PAGE ERROR)");
-            notify("YouTube Premium Status", "Failed (Error: PAGE ERROR)", checkDone);
+            youTubePremiumStatus = "Failed (Error: PAGE ERROR)";
         }
+
+        checkDone();
     });
 }
 
@@ -83,7 +91,8 @@ function RegionTest_YouTubeCDN() {
     retryRequest(options, function (error, response, data) {
         if (error) {
             log("YouTube CDN: Failed (Network Connection)");
-            notify("YouTube CDN Status", "Failed (Network Connection)", checkDone);
+            youTubeCDNStatus = "Failed (Network Connection)";
+            checkDone();
             return;
         }
 
@@ -92,7 +101,8 @@ function RegionTest_YouTubeCDN() {
 
         if (output.length === 0) {
             log("YouTube CDN: Failed (No valid data found before 'Debug Info:')");
-            notify("YouTube CDN Status", "Failed (No valid data found before 'Debug Info:')", checkDone);
+            youTubeCDNStatus = "Failed (No valid data found before 'Debug Info:')";
+            checkDone();
             return;
         }
 
@@ -101,7 +111,9 @@ function RegionTest_YouTubeCDN() {
         let location = match ? match[1] : "Unknown";
 
         log(`YouTube CDN Response Data:\n${location}`);
-        notify("YouTube CDN Response", `Location: ${location}`, checkDone);
+        youTubeCDNStatus = `CDN Location: ${location}`;
+
+        checkDone();
     });
 }
 
@@ -112,6 +124,9 @@ let completedRequests = 0;
 function checkDone() {
     completedRequests++;
     if (completedRequests === 2) {
+        // 合并通知内容
+        let message = `YouTube CDN：检测结果 - ${youTubeCDNStatus}\nYouTube Premium：检测结果 - ${youTubePremiumStatus}`;
+        notify("YouTube 检测", message); // 发送合并的通知
         $done(); // 结束执行
     }
 }
