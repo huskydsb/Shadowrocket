@@ -101,7 +101,7 @@ function RegionTest_YouTubeCDN() {
         let location = match ? match[1] : "Unknown";
 
         log(`YouTube CDN Response Data:\n${location}`);
-        notify("YouTube CDN Response", location, checkDone);
+        notify("YouTube CDN Response", `Location: ${location}`, checkDone);
     });
 }
 
