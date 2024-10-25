@@ -4,109 +4,109 @@
  ---------------------------------------
  */
 
-const REQUEST_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36',
-    'Accept-Language': 'en',
-    'Accept': '*/*',
-    'Referer': 'https://chat.openai.com/',
+ const REQUEST_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36', // 用戶代理，標識瀏覽器類型
+    'Accept-Language': 'en', // 接受的語言，這裡設置為英語
+    'Accept': '*/*', // 添加 Accept 頭，表示接受所有類型的內容
+    'Referer': 'https://chat.openai.com/', // 添加 Referer 頭，表示請求來源
 };
 
-const STATUS_COMING = 2;
-const STATUS_AVAILABLE = 1;
-const STATUS_NOT_AVAILABLE = 0;
-const STATUS_TIMEOUT = -1;
-const STATUS_ERROR = -2;
+
+const STATUS_COMING = 2; // 即將登陸
+const STATUS_AVAILABLE = 1; // 支持解鎖
+const STATUS_NOT_AVAILABLE = 0; // 不支持解鎖
+const STATUS_TIMEOUT = -1; // 檢測超時
+const STATUS_ERROR = -2; // 檢測異常
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36';
-const ipApiUrl = "https://ipinfo.io/json";
+const ipApiUrl = "https://ipinfo.io/json"; // IP获取API
 
-let args = getArgs();
+let args = getArgs(); // 獲取參數
 
 (async () => {
-    let now = new Date();
-    let hour = now.getHours();
-    let minutes = now.getMinutes();
-    hour = hour > 9 ? hour : "0" + hour;
-    minutes = minutes > 9 ? minutes : "0" + minutes;
+    let now = new Date(); // 獲取當前日期和時間
+    let hour = now.getHours(); // 獲取當前小時
+    let minutes = now.getMinutes(); // 獲取當前分鐘
+    hour = hour > 9 ? hour : "0" + hour; // 小於10的時數補零
+    minutes = minutes > 9 ? minutes : "0" + minutes; // 小於10的分鐘補零
 
+    // 初始化面板，顯示當前時間
     let panel_result = {
-        title: `${args.title} | ${hour}:${minutes}` || `解鎖檢測 | ${hour}:${minutes}`,
-        content: '',
-        icon: args.icon || 'play.tv.fill',
-        'icon-color': args.color || '#FF2D55',
+        title: `${args.title} | ${hour}:${minutes}` || `解鎖檢測 | ${hour}:${minutes}`, // 設置標題
+        content: '', // 設置內容
+        icon: args.icon || 'play.tv.fill', // 設置圖標
+        'icon-color': args.color || '#FF2D55', // 設置圖標顏色
     };
 
-    let notificationContent = "";
+    let notificationContent = ""; // 通知內容
 
-    try {
-        const ipData = await fetchData(ipApiUrl);
-        const ipInfo = JSON.parse(ipData);
-        const ipAddress = `IP: ${ipInfo.ip}  📍: ${ipInfo.region}, ${ipInfo.country}`;
-        panel_result.content = `${ipAddress}\n`;
-        notificationContent += `IP: ${ipInfo.ip}  📍: ${ipInfo.city}, ${ipInfo.country}\n`;
-    } catch (error) {
-        panel_result.content = "IP: N/A\n";
-        notificationContent += "IP: N/A\n";
-    }
+// 獲取 IP 資訊並將其添加到面板
+try {
+    const ipData = await fetchData(ipApiUrl); // 獲取 IP 資料
+    const ipInfo = JSON.parse(ipData); // 解析 IP 資料為 JSON 格式
+    const ipAddress = `IP: ${ipInfo.ip}  📍: ${ipInfo.region}, ${ipInfo.country}`; // 構建 IP 地址字串
+    panel_result.content = `${ipAddress}\n`; // 將 IP 添加到面板內容的第一行
+    notificationContent += `IP: ${ipInfo.ip}  📍: ${ipInfo.city}, ${ipInfo.country}\n`; // 將 IP 資訊添加到通知內容
+} catch (error) {
+    panel_result.content = "IP: N/A\n"; // 如果無法獲取 IP，則處理錯誤
+    notificationContent += "IP: N/A\n"; // 將錯誤資訊添加到通知內容
+}
 
-    // Concurrently check multiple services
-    const disneyPromise = testDisneyPlus();
-    const chatgptPromise = check_chatgpt();
-    const youtubePromise = check_youtube_premium();
-    const netflixPromise = check_netflix();
 
-    const [disneyResult, chatgptResult, youtubeResult, netflixResult] = await Promise.all([disneyPromise, chatgptPromise, youtubePromise, netflixPromise]);
+// 同時檢查多個服務
+let [{ region, status }] = await Promise.all([testDisneyPlus()]); // 同時檢查 Disney+ 的狀態
+await Promise.all([check_chatgpt(), check_youtube_premium(), check_netflix()]) // 同時檢查 ChatGPT、YouTube Premium 和 Netflix
+    .then((result) => {
+        let disney_result = getServiceStatus(status, region, "Disney"); // 獲取 Disney+ 的服務狀態
+        result.push(disney_result); // 將 Disney+ 的結果添加到結果陣列中
 
-    let disney_status = getServiceStatus(disneyResult.status, disneyResult.region, "Disney");
-    let youtube_netflix = [youtubeResult, netflixResult].join('  \t|  ');
-    let chatgpt_disney = [chatgptResult, disney_status].join('  \t|  ');
+        let youtube_netflix = [result[1], result[2]].join('  \t|  '); // 將 YouTube 和 Netflix 的結果合併
+        let chatgpt_disney = [result[0], result[3]].join('  \t|  '); // 將 ChatGPT 和 Disney 的結果合併
 
-    panel_result.content += youtube_netflix + '\n' + chatgpt_disney;
-    notificationContent += `${youtube_netflix}\n${chatgpt_disney}`;
+        // 更新面板內容，顯示服務狀態結果
+        panel_result.content += youtube_netflix + '\n' + chatgpt_disney;
 
-    $notification.post(`检测完成  |  ${hour}:${minutes}`, "", notificationContent);
-    $done(panel_result);
+        // 將解鎖結果添加到通知內容
+        notificationContent += `${youtube_netflix}\n`;
+        notificationContent += `${chatgpt_disney}`;
+    })
+    .finally(() => {
+        // 發送包含所有結果的通知
+        $notification.post(`检测完成  |  ${hour}:${minutes}`, "", notificationContent); // 發送通知
+        $done(panel_result); // 顯示最終的面板結果
+    });
 })();
 
+
+// 幫助函數，用於處理每個服務的解鎖狀態
 function getServiceStatus(status, region, serviceName) {
-    if (status == STATUS_COMING) {
-        return `${serviceName} ➟ 🔜\u2009${region}`;
-    } else if (status == STATUS_AVAILABLE) {
-        return `${serviceName} ➟ ✅\u2009${region}`;
-    } else if (status == STATUS_NOT_AVAILABLE) {
-        return `${serviceName} ➟ ❌`;
-    } else if (status == STATUS_TIMEOUT) {
-        return `${serviceName} ➟ N/A`;
+    if (status == STATUS_COMING) { // 如果狀態是即將到來
+        return `${serviceName} ➟ 🔜\u2009${region}`; // 返回即將可用的服務狀態
+    } else if (status == STATUS_AVAILABLE) { // 如果狀態是可用
+        return `${serviceName} ➟ ✅\u2009${region}`; // 返回可用的服務狀態
+    } else if (status == STATUS_NOT_AVAILABLE) { // 如果狀態是不可用
+        return `${serviceName} ➟ ❌`; // 返回不可用的服務狀態
+    } else if (status == STATUS_TIMEOUT) { // 如果狀態是超時
+        return `${serviceName} ➟ N/A`; // 返回超時的服務狀態
     } else {
-        return `${serviceName} ➟ N/A`;
+        return `${serviceName} ➟ N/A`; // 返回未知狀態的服務狀態
     }
 }
 
+// 從給定的 URL 獲取數據
 function fetchData(url) {
     return new Promise((resolve, reject) => {
         $httpClient.get({ url, headers: REQUEST_HEADERS }, (error, response, data) => {
-            if (error || response.status !== 200) {
-                reject(error || '请求失败');
+            if (error || response.status !== 200) { // 如果出現錯誤或狀態碼不是 200
+                reject(error || '请求失败'); // 拒絕 Promise，返回錯誤信息
             } else {
-                resolve(data);
+                resolve(data); // 成功獲取數據，解析 Promise
             }
         });
     });
 }
 
 // ... [保持您現有的服務檢查函數，如 ChatGPT、YouTube、Netflix、Disney+ 在此處]
-
-// 獲取並解析 URL 中的參數
-function getArgs() {
-    return Object.fromEntries(
-        $argument.split("&")
-            .map(item => item.split("="))
-            .map(([k, v]) => [k, decodeURIComponent(v)])
-    );
-}
-
-// ... [保持您現有的服務檢查函數的實現]
-
 
 // 獲取並解析 URL 中的參數
 function getArgs() {
