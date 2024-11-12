@@ -91,8 +91,15 @@ dns.sse.cisco.com/dns-query= server:208.67.220.222
 dns.sse.cisco.com/dns-query= server:2620:119:35::35
 dns.sse.cisco.com/dns-query= server:2620:119:53::53
 #
+#
+#
+#
+#
 ## > 国内域名使用国内DNS进行解析
+#
+#
 # > 苹果中国域名解析
+#
 *.aaplimg.com = server:quic://dns.alidns.com
 *.apple.cn = server:quic://dns.alidns.com
 *.apple.com = server:quic://dns.alidns.com
