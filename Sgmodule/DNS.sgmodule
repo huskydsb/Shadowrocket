@@ -148,6 +148,7 @@ dns.sse.cisco.com/dns-query= server:2620:119:53::53
 *.insidear.cn = server:quic://dns.alidns.com
 *.itunes.g.aaplimg.com = server:quic://dns.alidns.com
 *.itunesapple.cn = server:quic://dns.alidns.com
+*.itunes.apple.com = server:quic://dns.alidns.com
 *.itunes-apple.cn = server:quic://dns.alidns.com
 *.itunes-apple.com.akadns.net = server:quic://dns.alidns.com
 *.itunesradio.cn = server:quic://dns.alidns.com
