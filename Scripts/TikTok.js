@@ -11,7 +11,7 @@ let headers = {
 $httpClient.get({ url: url, headers: headers }, function (error, response, body) {
     if (error) {
         // 网络连接失败
-        let title = "TikTok 检测";
+        let title = "TikTok 检测结果";
         let message = "网络连接失败";
         console.log(`[LOG] ${title} - ${message}`);
         $notification.post(title, message, "请检查网络设置");
@@ -25,36 +25,36 @@ $httpClient.get({ url: url, headers: headers }, function (error, response, body)
             if (region && region[1]) {
                 // 检测到地区信息
                 let regionCode = region[1];
-                let title = "TikTok 检测";
+                let title = "TikTok 检测结果";
                 let message = `解锁 ✅ (地区: ${regionCode})`;
                 console.log(`[LOG] ${title} - ${message}`);
                 $notification.post(title, message, "可以观看 TikTok");
                 $done({
-                    title: "TikTok",
+                    title: "TikTok 检测结果",
                     content: message,
                     icon: "checkmark.seal.fill",
                     "icon-color": "#00FF00"
                 });
             } else if (body.includes("The #TikTokTraditions") || body.includes("This LIVE isn't available")) {
                 // 无法解锁
-                let title = "TikTok 检测";
+                let title = "TikTok 检测结果";
                 let message = "未解锁 ❌";
                 console.log(`[LOG] ${title} - ${message}`);
                 $notification.post(title, message, "当前地区无法观看 TikTok");
                 $done({
-                    title: "TikTok",
+                    title: "TikTok 检测结果",
                     content: message,
                     icon: "xmark.seal.fill",
                     "icon-color": "#FF0000"
                 });
             } else {
                 // 其他未知状态
-                let title = "TikTok 检测";
+                let title = "TikTok 检测结果";
                 let message = "检测失败，未知状态";
                 console.log(`[LOG] ${title} - ${message}`);
                 $notification.post(title, message, "请检查配置");
                 $done({
-                    title: "TikTok",
+                    title: "TikTok 检测结果",
                     content: message,
                     icon: "questionmark.circle",
                     "icon-color": "#FFA500"
@@ -62,12 +62,12 @@ $httpClient.get({ url: url, headers: headers }, function (error, response, body)
             }
         } else {
             // 无法提取地区信息
-            let title = "TikTok 检测";
+            let title = "TikTok 检测结果";
             let message = "未解锁 ❌ (地区信息缺失)";
             console.log(`[LOG] ${title} - ${message}`);
             $notification.post(title, message, "请检查网络或代理设置");
             $done({
-                title: "TikTok",
+                title: "TikTok 检测结果",
                 content: message,
                 icon: "xmark.seal.fill",
                 "icon-color": "#FF0000"
@@ -80,7 +80,7 @@ $httpClient.get({ url: url, headers: headers }, function (error, response, body)
         console.log(`[LOG] ${title} - ${message}`);
         $notification.post(title, message, "请检查网络或代理设置");
         $done({
-            title: "TikTok",
+            title: "TikTok 检测结果",
             content: message,
             icon: "exclamationmark.triangle",
             "icon-color": "#FFA500"
