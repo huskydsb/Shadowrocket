@@ -75,7 +75,7 @@ $httpClient.get({ url: url, headers: headers }, function (error, response, body)
         }
     } else {
         // 请求失败
-        let title = "TikTok 检测";
+        let title = "TikTok 检测结果";
         let message = "检测失败，无法获取响应";
         console.log(`[LOG] ${title} - ${message}`);
         $notification.post(title, message, "请检查网络或代理设置");
