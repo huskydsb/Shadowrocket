@@ -1,0 +1,15 @@
+#!url=https://example.com/test-speed-shadowrocket.sgmodule
+#!name=Local Test Speed
+#!desc=Local Streaming Speed Test
+#!author=YourName
+#!version=1.0
+#!category=Test
+
+[General]
+force-http-engine-hosts = %APPEND% test.shadowrocket
+
+[Script]
+Rewrite: TestSpeed = type=http-request,pattern=^https?:\/\/test\.shadowrocket,script-path=https://example.com/test-speed.js, requires-body=false, timeout=60
+
+[MITM]
+hostname = %INSERT% test.shadowrocket
