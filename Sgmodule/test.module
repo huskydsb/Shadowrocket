@@ -9,7 +9,7 @@
 force-http-engine-hosts = %APPEND% test.shadowrocket
 
 [Script]
-Rewrite: TestSpeed = type=http-request,pattern=^https?:\/\/test\.shadowrocket,script-path=https://example.com/test-speed.js, requires-body=false, timeout=60
+Rewrite: TestSpeed = type=http-request,pattern=^https?:\/\/test\.shadowrocket,script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Scripts/test.js, requires-body=false, timeout=60
 
 [MITM]
 hostname = %INSERT% test.shadowrocket
