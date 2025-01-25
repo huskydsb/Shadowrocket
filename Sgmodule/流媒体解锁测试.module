@@ -25,3 +25,6 @@ Tiktok = type=http-request, pattern=^https:\/\/streaming\.test\/tiktok\/?$, scri
 YouTube = type=http-request, pattern=^https:\/\/streaming\.test\/youtube\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/youtube.js, timeout=60
 
 Front-end = type=http-request, pattern=^https:\/\/streaming\.test\/$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/front-end.js, timeout=60
+
+[MITM]
+hostname = %APPEND% streaming.test
