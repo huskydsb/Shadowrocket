@@ -199,9 +199,9 @@ const html = `
             { name: 'Disney+', logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg', endpoint: 'disney' },
             { name: 'Scamalytics', logo: 'https://thumbs.dreamstime.com/b/ip-icon-isolated-white-background-simple-vector-logo-221565540.jpg', endpoint: 'scamalytics' },
             { name: 'Spotify', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg', endpoint: 'spotify' },  // 新增 Spotify 模块
-            { name: 'Bilibili', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Bilibili_logo_2022.svg', endpoint: 'bilibili' },  // 新增 Bilibili 模块
-            { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/Steam_logo.svg', endpoint: 'steam' },  // 新增 Steam 模块
-            { name: 'Bahamut', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Bahamut_Logo.svg', endpoint: 'bahamut' }  // 新增 Bahamut 模块
+            { name: 'Bilibili', logo: 'https://img.icons8.com/?size=512&id=5E24fZ9ORelo&format=png', endpoint: 'bilibili' },  // 新增 Bilibili 模块
+            { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/2048px-Steam_icon_logo.svg.png', endpoint: 'steam' },  // 新增 Steam 模块
+            { name: 'Bahamut', logo: 'https://play-lh.googleusercontent.com/OM1SQPEe8MSSCwLNmHr14meKhmwE3uYW5n24VxMnozsKK58TOWsgyUuSqq78EOV4l7c', endpoint: 'bahamut' }  // 新增 Bahamut 模块
         ];
 
         // 获取 HTML 元素
