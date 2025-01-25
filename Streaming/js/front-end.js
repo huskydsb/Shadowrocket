@@ -197,7 +197,7 @@ const html = `
             { name: 'ChatGPT', logo: 'https://thumbs.dreamstime.com/b/minsk-belarus-openai-chatgpt-logo-artifical-chatbot-system-chat-bot-button-web-app-phone-icon-symbol-editorial-vector-278857334.jpg', endpoint: 'chatgpt' },
             { name: 'TikTok', logo: 'https://th.bing.com/th/id/R.d48d60b648c547f4603eafedb273e2d6?rik=A6hIvIL7D%2bQYMw&pid=ImgRaw&r=0', endpoint: 'tiktok' },
             { name: 'Disney+', logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg', endpoint: 'disney' },
-            { name: 'IP CHECK', logo: 'https://thumbs.dreamstime.com/b/ip-icon-isolated-white-background-simple-vector-logo-221565540.jpg', endpoint: 'ipcheck' },
+            { name: 'Scamalytics', logo: 'https://thumbs.dreamstime.com/b/ip-icon-isolated-white-background-simple-vector-logo-221565540.jpg', endpoint: 'scamalytics' },
             { name: 'Spotify', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg', endpoint: 'spotify' },  // 新增 Spotify 模块
             { name: 'Bilibili', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Bilibili_logo_2022.svg', endpoint: 'bilibili' },  // 新增 Bilibili 模块
             { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/Steam_logo.svg', endpoint: 'steam' },  // 新增 Steam 模块
