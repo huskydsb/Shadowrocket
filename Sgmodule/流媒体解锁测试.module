@@ -23,6 +23,14 @@ Tiktok = type=http-request, pattern=^https:\/\/streaming\.test\/tiktok\/?$, scri
 
 YouTube = type=http-request, pattern=^https:\/\/streaming\.test\/youtube\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/youtube.js, timeout=60
 
+HBO Max = type=http-request, pattern=^https:\/\/streaming\.test\/max\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/max.js, timeout=60
+
+PrimeVide = type=http-request, pattern=^https:\/\/streaming\.test\/primevideo\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/primevideo.js, timeout=60
+
+Bing = type=http-request, pattern=^https:\/\/streaming\.test\/bing\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/bing.js, timeout=60
+
+ニコニコ = type=http-request, pattern=^https:\/\/streaming\.test\/niconico\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/niconico.js, timeout=60
+
 Front-end = type=http-request, pattern=^https:\/\/streaming\.test\/$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/front-end.js, timeout=60
 
 [MITM]
