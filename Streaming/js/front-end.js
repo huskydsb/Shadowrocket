@@ -209,7 +209,7 @@ const html = `
             { name: 'Bilibili', logo: 'https://img.icons8.com/?size=512&id=5E24fZ9ORelo&format=png', endpoint: 'bilibili' },
             { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/2048px-Steam_icon_logo.svg.png', endpoint: 'steam' },
             { name: 'Bahamut', logo: 'https://i2.bahamut.com.tw/anime/logo.svg', endpoint: 'bahamut' },
-            { name: 'PrimeVideo', logo: 'https://logos-world.net/wp-content/uploads/2021/04/Amazon-Prime-Video-Logo.png', endpoint: 'primeVideo' },
+            { name: 'PrimeVideo', logo: 'https://logos-world.net/wp-content/uploads/2021/04/Amazon-Prime-Video-Logo.png', endpoint: 'primevideo' },
             { name: 'HBO Max', logo: 'https://logotyp.us/file/hbo-max.svg', endpoint: 'max' },
             { name: 'ニコニコ', logo: 'https://nichegamer.com/wp-content/uploads/2024/06/niconico-06-23-24-2.jpg', endpoint: 'niconico' }
         ];
