@@ -1,5 +1,4 @@
-async
-function WebTest_OpenAI() {
+async function WebTest_OpenAI() {
     const log = (message) = >{
         console.log(message)
     };
