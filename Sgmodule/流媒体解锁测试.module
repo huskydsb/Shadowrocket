@@ -2,7 +2,6 @@
 #!desc= https://streaming.test
 
 [Script]
-Discovery = type=http-request, pattern=^https:\/\/streaming\.test\/discovery\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/discovery.js, timeout=60
 
 Bahamut = type=http-request, pattern=^https:\/\/streaming\.test\/bahamut\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/bahamuts.js, timeout=60
 
