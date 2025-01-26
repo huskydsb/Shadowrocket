@@ -13,13 +13,15 @@ const html = `
     <link rel="apple-touch-icon" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="180x180"> <!-- iOS 上的应用图标 -->
     <!-- 为书签添加图标 -->
     <link rel="icon" type="image/png" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="64x64">
-
     <title>流媒体解锁测试</title>
     <style>
         /* 页面基本样式 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
             background-color: #f7f7f7;
+            background-image: url('https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/cool-background.png');
+            background-size: cover;
+            background-position: center;
             margin: 0;
             padding: 0;
             display: flex;
@@ -28,36 +30,34 @@ const html = `
             justify-content: center;
             min-height: 100vh;
         }
-
         /* 顶部 logo 和标题 */
-/* 顶部 logo 和标题 */
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 30px;
-    margin-top: 16px;  /* 向下移动 logo 和标题 */
-}
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            margin-top: 16px;  /* 向下移动 logo 和标题 */
+        }
         .header a {
             display: flex;
             align-items: center;
             text-decoration: none;
         }
-
         .header img {
             width: 80px; /* 放大 Logo */
             height: 80px; /* 放大 Logo */
             margin-right: 15px; /* logo 与标题的间距 */
         }
-
         .header h1 {
             font-size: 28px;
             font-weight: bold;
-            color: #333;
+            color: transparent;
+            background: linear-gradient(45deg, #ff0077, #5900b3, #00b3b3);
+            -webkit-background-clip: text;
+            background-clip: text;
             margin: 0;
             text-align: center;
         }
-
         /* 模块容器 */
         .container {
             display: grid;
@@ -68,7 +68,6 @@ const html = `
             margin-bottom: 50px;
             padding: 10px;
         }
-
         .module {
             display: flex;
             flex-direction: column;
@@ -82,25 +81,21 @@ const html = `
             cursor: pointer;
             transition: all 0.3s ease-in-out;
         }
-
         .module:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
-
         .module img {
             width: 80px;
             height: 80px;
             margin-bottom: 15px;
             object-fit: contain;
         }
-
         .module span {
             font-size: 18px;
             font-weight: 600;
             color: #444;
         }
-
         /* 弹窗样式 */
         #result-popup {
             position: fixed;
@@ -118,26 +113,22 @@ const html = `
             z-index: 1000;
             box-sizing: border-box;
         }
-
         #result-popup h2 {
             margin: 0 0 15px 0;
             font-size: 20px;
             color: #444;
             text-align: center;
         }
-
         #result-popup p {
             margin: 0 0 20px 0;
             font-size: 16px;
             text-align: center;
             color: #666;
         }
-
         #result-popup .buttons {
             display: flex;
             justify-content: space-between;
         }
-
         #result-popup button {
             padding: 12px 25px;
             border: none;
@@ -147,21 +138,17 @@ const html = `
             width: 48%;
             transition: background-color 0.3s;
         }
-
         #close-btn {
             background-color: #f44336;
             color: white;
         }
-
         #close-btn:hover {
             background-color: #d32f2f;
         }
-
         #copy-btn {
             background-color: #4caf50;
             color: white;
         }
-
         #copy-btn:hover {
             background-color: #388e3c;
         }
@@ -175,9 +162,7 @@ const html = `
             <h1>流媒体解锁测试</h1>
         </a>
     </div>
-
     <div id="container" class="container"></div>
-
     <!-- 弹出模块 -->
     <div id="result-popup">
         <h2 id="popup-title"></h2>
@@ -187,24 +172,21 @@ const html = `
             <button id="copy-btn">复制</button>
         </div>
     </div>
-
     <script>
         // 配置基础 URL
         const baseUrl = "https://streaming.test"; // 请修改为实际后端地址
-
         const streamingServices = [
-            { name: 'YouTube', logo: 'https://th.bing.com/th/id/R.b02b5d363a610229fe82e82ed0c369b4?rik=lECwiztO4NeaVA&pid=ImgRaw&r=0', endpoint: 'youtube' },
-            { name: 'Netflix', logo: 'https://th.bing.com/th/id/R.f8cfc663b462b3a20167b743aa3bc059?rik=%2bScScgSR6An6uw&pid=ImgRaw&r=0', endpoint: 'netflix' },
-            { name: 'ChatGPT', logo: 'https://thumbs.dreamstime.com/b/minsk-belarus-openai-chatgpt-logo-artifical-chatbot-system-chat-bot-button-web-app-phone-icon-symbol-editorial-vector-278857334.jpg', endpoint: 'chatgpt' },
-            { name: 'TikTok', logo: 'https://th.bing.com/th/id/R.d48d60b648c547f4603eafedb273e2d6?rik=A6hIvIL7D%2bQYMw&pid=ImgRaw&r=0', endpoint: 'tiktok' },
+            { name: 'YouTube', logo: 'https://raw.githubusercontent.com/huskydsb/icon/main/img/YouTube.png', endpoint: 'youtube' },
+            { name: 'Netflix', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg', endpoint: 'netflix' },
+            { name: 'ChatGPT', logo: 'https://raw.githubusercontent.com/huskydsb/icon/main/img/ChatGPT.png', endpoint: 'chatgpt' },
+            { name: 'TikTok', logo: 'https://www.tiktok.com/favicon.ico', endpoint: 'tiktok' },
             { name: 'Disney+', logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg', endpoint: 'disney' },
-            { name: 'Scamalytics', logo: 'https://thumbs.dreamstime.com/b/ip-icon-isolated-white-background-simple-vector-logo-221565540.jpg', endpoint: 'scamalytics' },
-            { name: 'Spotify', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg', endpoint: 'spotify' },  // 新增 Spotify 模块
-            { name: 'Bilibili', logo: 'https://img.icons8.com/?size=512&id=5E24fZ9ORelo&format=png', endpoint: 'bilibili' },  // 新增 Bilibili 模块
-            { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/2048px-Steam_icon_logo.svg.png', endpoint: 'steam' },  // 新增 Steam 模块
-            { name: 'Bahamut', logo: 'https://play-lh.googleusercontent.com/OM1SQPEe8MSSCwLNmHr14meKhmwE3uYW5n24VxMnozsKK58TOWsgyUuSqq78EOV4l7c', endpoint: 'bahamut' }  // 新增 Bahamut 模块
+            { name: 'Scamalytics', logo: 'https://raw.githubusercontent.com/huskydsb/icon/main/img/Scamalytics.png', endpoint: 'scamalytics' },
+            { name: 'Spotify', logo: 'https://m.media-amazon.com/images/I/51rttY7a+9L.png', endpoint: 'spotify' },
+            { name: 'Bilibili', logo: 'https://img.icons8.com/?size=512&id=5E24fZ9ORelo&format=png', endpoint: 'bilibili' },
+            { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/2048px-Steam_icon_logo.svg.png', endpoint: 'steam' },
+            { name: 'Bahamut', logo: 'https://i2.bahamut.com.tw/anime/logo.svg', endpoint: 'bahamut' }
         ];
-
         // 获取 HTML 元素
         const container = document.getElementById('container');
         const resultPopup = document.getElementById('result-popup');
@@ -212,7 +194,6 @@ const html = `
         const popupMessage = document.getElementById('popup-message');
         const closeBtn = document.getElementById('close-btn');
         const copyBtn = document.getElementById('copy-btn');
-
         // 动态创建流媒体模块
         function createModule(service) {
             const moduleDiv = document.createElement('div');
@@ -224,30 +205,23 @@ const html = `
             moduleDiv.addEventListener('click', () => runTest(service.name, service.endpoint));
             return moduleDiv;
         }
-
         // 渲染所有模块到页面
         streamingServices.forEach(service => {
             container.appendChild(createModule(service));
         });
-
         // 测试流媒体服务
         async function runTest(name, endpoint) {
             const url = \`\${baseUrl}/\${endpoint}\`;
-
             popupTitle.textContent = \`正在测试 \${name}\`;
             popupMessage.textContent = '请稍候...';
             resultPopup.style.display = 'block';
-
             try {
                 const response = await fetch(url, { method: 'GET', timeout: 10000 });
                 if (!response.ok) throw new Error('请求失败');
                 const result = await response.json(); // 假设服务器返回的是 JSON 格式的响应
-
                 popupTitle.textContent = \`\${name} 测试结果\`;
-
                 // 提取并显示 message 字段的值
                 const resultMessage = result.message || "未知结果";
-
                 popupMessage.innerHTML = resultMessage; // 使用 innerHTML 来显示包含 <br> 的内容
                 console.log(\`\${name} 测试结果：\`, resultMessage);
             } catch (error) {
@@ -255,12 +229,10 @@ const html = `
                 popupMessage.textContent = '请检查网络连接或脚本错误';
             }
         }
-
         // 关闭弹窗
         closeBtn.addEventListener('click', () => {
             resultPopup.style.display = 'none';
         });
-
         // 复制按钮功能
         copyBtn.addEventListener('click', () => {
             const message = popupMessage.textContent || popupMessage.innerText;
@@ -273,9 +245,9 @@ const html = `
 `;
 
 $done({
-  response: {
-    status: 200,
-    headers: { 'Content-Type': 'text/html;charset=UTF-8' },
-    body: html
-  }
+    response: {
+        status: 200,
+        headers: { 'Content-Type': 'text/html;charset=UTF-8' },
+        body: html
+    }
 });
