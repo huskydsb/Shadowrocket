@@ -1,10 +1,8 @@
 async function WebTest_OpenAI() {
-    const log = (message) = >{
-        console.log(message)
+    const log = (message) => {
+        console.log(message);
     };
-    const notify = (title, message) = >{
-        $notification.post(title, "", message)
-    };
+
     try {
         $httpClient.get({
             url: 'https://api.openai.com/compliance/cookie_requirements',
@@ -24,30 +22,23 @@ async function WebTest_OpenAI() {
                 'sec-fetch-site': 'same-site',
                 'user-agent': ''
             }
-        },
-        function(error, response, data) {
+        }, function (error, response, data) {
             let result = {};
+
             if (error) {
                 result = {
                     status: "failed",
                     message: "网络连接失败"
                 };
-                $done({
-                    response: {
-                        status: 200,
-                        body: JSON.stringify(result),
-                        headers: {
-                            "Content-Type": "application/json"
-                        }
-                    }
-                });
-                return
+                log(`检测结果: ${JSON.stringify(result)}`);
+                $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
+                return;
             }
+
             log("ChatGPT: 已收到 Cookie 请求的响应。");
             const tmpresult1 = data.toLowerCase().includes('unsupported_country');
-            log(`Cookie请求响应: $ {
-                data
-            }`);
+            log(`Cookie 请求响应: ${data}`);
+
             if (!tmpresult1) {
                 $httpClient.get({
                     url: 'https://ios.chat.openai.com/',
@@ -65,98 +56,69 @@ async function WebTest_OpenAI() {
                         'upgrade-insecure-requests': '1',
                         'user-agent': ''
                     }
-                },
-                function(error2, response2, data2) {
+                }, function (error2, response2, data2) {
                     if (error2) {
                         result = {
                             status: "failed",
                             message: "网络连接失败"
                         };
-                        $done({
-                            response: {
-                                status: 200,
-                                body: JSON.stringify(result),
-                                headers: {
-                                    "Content-Type": "application/json"
-                                }
-                            }
-                        });
-                        return
+                        log(`检测结果: ${JSON.stringify(result)}`);
+                        $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
+                        return;
                     }
+
                     log("ChatGPT: 已收到 VPN 请求的响应。");
                     const tmpresult2 = data2.toLowerCase().includes('vpn');
-                    log(`VPN检测响应: $ {
-                        data2
-                    }`);
+                    log(`VPN 检测响应: ${data2}`);
+
                     if (!tmpresult1 && !tmpresult2) {
                         result = {
                             status: "success",
                             message: "ChatGPT: 恭喜你，服务全部可用。"
-                        }
+                        };
                     } else if (tmpresult1 && tmpresult2) {
                         result = {
                             status: "failed",
                             message: "ChatGPT: 对不起，服务因国家和 VPN 限制而不可用。"
-                        }
+                        };
                     } else if (!tmpresult1 && tmpresult2) {
                         result = {
                             status: "failed",
                             message: "ChatGPT: 对不起，服务仅限使用网页浏览器（VPN 限制）。"
-                        }
+                        };
                     } else if (tmpresult1 && !tmpresult2) {
                         result = {
                             status: "failed",
                             message: "ChatGPT: 对不起，服务仅限使用移动应用（国家限制）。"
-                        }
+                        };
                     } else {
                         result = {
                             status: "failed",
                             message: "ChatGPT: 检测失败（未知错误）。"
-                        }
+                        };
                     }
-                    $done({
-                        response: {
-                            status: 200,
-                            body: JSON.stringify(result),
-                            headers: {
-                                "Content-Type": "application/json"
-                            }
-                        }
-                    })
-                })
+                    log(`检测结果: ${JSON.stringify(result)}`);
+                    $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
+                });
             } else {
                 result = {
                     status: "failed",
                     message: "ChatGPT: 对不起，该服务在您的国家不可用。"
                 };
-                $done({
-                    response: {
-                        status: 200,
-                        body: JSON.stringify(result),
-                        headers: {
-                            "Content-Type": "application/json"
-                        }
-                    }
-                })
+                log(`检测结果: ${JSON.stringify(result)}`);
+                $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
             }
-        })
-    } catch(error) {
-        const errorMsg = `ChatGPT: 检测失败（错误: $ {
-            error.message
-        }）`;
+        });
+
+    } catch (error) {
+        const errorMsg = `ChatGPT: 检测失败（错误: ${error.message}）`;
         let result = {
             status: "failed",
             message: errorMsg
         };
-        $done({
-            response: {
-                status: 200,
-                body: JSON.stringify(result),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            }
-        })
+        log(`检测结果: ${JSON.stringify(result)}`);
+        $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
     }
 }
+
 WebTest_OpenAI();
