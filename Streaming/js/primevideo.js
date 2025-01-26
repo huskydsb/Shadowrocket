@@ -10,7 +10,7 @@ $httpClient.get({ url: url, headers: headers }, function (error, response, body)
 
     if (error) {
         // 网络连接失败
-        result.message = "Amazon Prime Video:网络连接失败";
+        result.message = "Prime Video:网络连接失败";
         console.log(`[LOG] Prime Video 检测结果 - ${result.message}`);
         $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
     } else if (body) {
@@ -22,24 +22,24 @@ $httpClient.get({ url: url, headers: headers }, function (error, response, body)
 
         if (isBlocked) {
             // 无法访问服务
-            result.message = "Amazon Prime Video:未解锁 ❌ (服务不可用)";
+            result.message = "Prime Video:未解锁 ❌ (服务不可用)";
             console.log(`[LOG] Prime Video 检测结果 - ${result.message}`);
             $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
         } else if (regionMatch && regionMatch[1]) {
             // 检测到地区信息
             let region = regionMatch[1];
-            result.message = `Amazon Prime Video:解锁 ✅ (地区: ${region})`;
+            result.message = `Prime Video:解锁 ✅ (地区: ${region})`;
             console.log(`[LOG] Prime Video 检测结果 - ${result.message}`);
             $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
         } else {
             // 未知错误
-            result.message = "Amazon Prime Video:检测失败，未知状态";
+            result.message = "Prime Video:检测失败，未知状态";
             console.log(`[LOG] Prime Video 检测结果 - ${result.message}`);
             $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
         }
     } else {
         // 请求失败
-        result.message = "Amazon Prime Video:检测失败，无法获取响应";
+        result.message = "Prime Video:检测失败，无法获取响应";
         console.log(`[LOG] Prime Video 检测结果 - ${result.message}`);
         $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
     }
