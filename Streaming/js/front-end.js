@@ -64,15 +64,22 @@ const html = `
         }
 
         /* 模块容器 */
-        .container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-            width: 90%;
-            max-width: 1000px;
-            margin-bottom: 50px;
-            padding: 10px;
-        }
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    width: 90%;
+    max-width: 1000px;
+    margin-bottom: 50px;
+    padding: 10px;
+}
+
+/* 新增的媒体查询部分 */
+@media (max-width: 375px) {
+    .container {
+        grid-template-columns: repeat(2, 1fr); /* 设置屏幕宽度小于 375px 时使用双列布局 */
+    }
+}
 
         .module {
             display: flex;
@@ -211,7 +218,7 @@ const html = `
             { name: 'Bahamut', logo: 'https://i2.bahamut.com.tw/anime/logo.svg', endpoint: 'bahamut' },
             { name: 'PrimeVideo', logo: 'https://logos-world.net/wp-content/uploads/2021/04/Amazon-Prime-Video-Logo.png', endpoint: 'primevideo' },
             { name: 'HBO Max', logo: 'https://logotyp.us/file/hbo-max.svg', endpoint: 'max' },
-            { name: 'ニコニコ', logo: 'https://nichegamer.com/wp-content/uploads/2024/06/niconico-06-23-24-2.jpg', endpoint: 'niconico' }
+            { name: 'ニコニコ', logo: 'https://nichegamer.com/wp-content/uploads/2024/06/niconico-06-23-24-2.jpg', endpoint: 'nicovideo' }
         ];
 
         // 获取 HTML 元素
