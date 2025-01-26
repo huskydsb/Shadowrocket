@@ -12,7 +12,7 @@ const html = `
     <link rel="icon" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="192x192"> <!-- 推荐使用 192x192 图标 -->
     <link rel="apple-touch-icon" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="180x180"> <!-- iOS 上的应用图标 -->
     <!-- 为书签添加图标 -->
-		<link rel="icon" type="image/png" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="64x64">
+    <link rel="icon" type="image/png" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="64x64">
 
     <title>流媒体解锁测试</title>
     <style>
@@ -30,13 +30,14 @@ const html = `
         }
 
         /* 顶部 logo 和标题 */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
+/* 顶部 logo 和标题 */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    margin-top: 16px;  /* 向下移动 logo 和标题 */
+}
         .header a {
             display: flex;
             align-items: center;
