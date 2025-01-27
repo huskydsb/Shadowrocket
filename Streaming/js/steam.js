@@ -1,3 +1,12 @@
+function getTimeStamp() {
+    const now = new Date();
+    return `[${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
+}
+
+function logWithEmoji(emoji, message) {
+    console.log(`${getTimeStamp()} - ${emoji} ${message}`);
+}
+
 let url = "https://store.steampowered.com/app/1295660/VII/";
 let headers = {
     'Accept': '*/*',
@@ -13,85 +22,67 @@ var params = {
     headers: headers,
 };
 
-// 请求函数，支持重试
-function fetchWithRetry(params, retries = 3) {
+const currencyMap = {
+    "JP": ["¥", "JPY"], "US": ["$", "USD"], "GB": ["£", "GBP"],
+    "CN": ["¥", "CNY"], "EU": ["€", "EUR"], "IN": ["₹", "INR"],
+    "CA": ["$", "CAD"], "AU": ["$", "AUD"], "KR": ["₩", "KRW"],
+    "TW": ["NT$", "TWD"], "RU": ["₽", "RUB"], "CH": ["Fr", "CHF"]
+};
+
+function fetchData(params) {
     return new Promise((resolve, reject) => {
-        let attempt = 0;
-
-        function tryRequest() {
-            attempt++;
-            console.log(`尝试请求，第 ${attempt} 次`);
-            $httpClient.get(params, function (errormsg, response, data) {
-                if (errormsg && attempt < retries) {
-                    console.log(`请求失败，第 ${attempt} 次重试...`);
-                    tryRequest();
-                } else if (errormsg) {
-                    console.log(`请求失败，第 ${attempt} 次，错误信息: ${errormsg}`);
-                    reject('请求失败，无法获取数据');
-                } else {
-                    console.log(`请求成功，第 ${attempt} 次`);
-                    resolve(response);
-                }
-            });
-        }
-
-        tryRequest();
+        logWithEmoji("🚀", `启动请求 -> ${params.url}`);
+        logWithEmoji("🔍", `请求头: ${JSON.stringify(params.headers).slice(0, 80)}...`);
+        $httpClient.get(params, (err, response, data) => {
+            if (err) {
+                logWithEmoji("❌", `请求失败: ${err.code} | ${err.message}`);
+                reject(err);
+            } else {
+                logWithEmoji("✅", `响应状态: ${response.status}`);
+                logWithEmoji("📦", `响应头: ${JSON.stringify(response.headers).slice(0, 100)}...`);
+                resolve(response);
+            }
+        });
     });
 }
 
-// 并发执行三次请求
-Promise.all([fetchWithRetry(params), fetchWithRetry(params), fetchWithRetry(params)])
-    .then(responses => {
+logWithEmoji("⚡", "脚本初始化开始");
+fetchData(params)
+    .then(response => {
         let result = {};
-
-        // 假设第一个请求成功即认为有效
-        let response = responses[0];
-        if (response) {
-            let steamCountry = response.headers['Set-Cookie'].split(';').find(cookie => cookie.startsWith('steamCountry='));
-            if (steamCountry) {
-                let countryCode = steamCountry.split('=')[1].split('%7C')[0];  // 提取国家代码
-                let currency = getCurrencyByCountry(countryCode); // 根据国家代码推测货币
-                result.message = `Steam商店国家代码: ${countryCode}<br>Steam商店国家货币: ${currency}`;
-                console.log(`STEAM商店国家代码: ${countryCode}`);
-                console.log(`STEAM商店国家货币: ${currency}`);
-            } else {
-                result.message = "无法检测到国家和货币信息";
-                console.log(result.message);
+        logWithEmoji("🔧", "开始解析响应数据");
+        try {
+            const cookies = response.headers['Set-Cookie'];
+            if (!cookies) {
+                logWithEmoji("⚠️", "响应头中未找到Set-Cookie字段");
+                throw new Error("Missing cookies");
             }
-        } else {
-            result.message = "所有请求均失败，无法获取数据";
-            console.log(result.message);
+            logWithEmoji("🍪", `原始Cookie数据: ${cookies.slice(0, 80)}...`);
+            const steamCountry = cookies.split(';').find(c => c.trim().startsWith('steamCountry='));
+            if (!steamCountry) {
+                logWithEmoji("⚠️", "Cookie中未找到steamCountry字段");
+                throw new Error("Country code not found");
+            }
+            const countryCode = steamCountry.split('=')[1].split('%7C')[0];
+            logWithEmoji("🌍", `提取国家代码: ${countryCode}`);
+            const currency = currencyMap[countryCode] || ["?", "Unknown"];
+            result.message = `Steam地区: ${countryCode}<br>Steam货币: ${currency[0]} ${currency[1]}`;
+            logWithEmoji("💹", `最终货币解析: ${currency[1]} (${currency[0]})`);
+        } catch (e) {
+            logWithEmoji("⛔", `数据处理错误: ${e.message}`);
+            result.message = "无法检测地区信息";
         }
-
-        // 返回结果给前端
-        $done({
-            response: {
-                status: 200,
-                body: JSON.stringify(result),
-                headers: { "Content-Type": "application/json" }
-            }
-        });
+        logWithEmoji("📋", `最终结果: ${result.message}`);
+        $done({ response: { status: 200, body: JSON.stringify(result) } });
     })
     .catch(error => {
-        // 如果三次请求都失败，返回错误信息
-        console.log(error);
+        logWithEmoji("💥", `全局错误: ${error.message || error}`);
         $done({
             response: {
                 status: 500,
-                body: JSON.stringify({ message: "请求失败，无法获取数据" }),
-                headers: { "Content-Type": "application/json" }
+                body: JSON.stringify({ message: "检测失败: " + (error.message || "未知错误") })
             }
         });
     });
 
-// 根据国家代码推测货币
-function getCurrencyByCountry(countryCode) {
-    const currencyMap = {
-        "JP": "JPY", "US": "USD", "GB": "GBP", "CN": "CNY", "EU": "EUR", "IN": "INR", "CA": "CAD", "AU": "AUD",
-        "CH": "CHF", "SE": "SEK", "NZ": "NZD", "KR": "KRW", "SG": "SGD", "HK": "HKD", "BR": "BRL", "RU": "RUB",
-        "ZA": "ZAR", "MX": "MXN", "SA": "SAR", "AE": "AED", "FR": "EUR", "DE": "EUR", "IT": "EUR", "ES": "EUR",
-        "NL": "EUR", "BE": "EUR", "AT": "EUR", "IE": "EUR", "PT": "EUR", "GR": "EUR", "FI": "EUR", "DK": "DKK",
-        "NO": "NOK", "PL": "PLN", "TR": "TRY", "TH": "THB", "TW": "TWD"
-    };
-    return currencyMap[countryCode] || "Unknown Currency"; // 默认返回 "Unknown Currency"
-}
+logWithEmoji("⏳", "等待请求响应...");
