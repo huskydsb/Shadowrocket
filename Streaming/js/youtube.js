@@ -1,26 +1,32 @@
-// 定义日志函数
-function log(message) {
-    console.log(message); // 仅输出到控制台
+function log(message, emoji = "📄") {
+    const now = new Date();
+    const timestamp = `[${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
+    console.log(`${timestamp} - ${emoji} ${message}`);
 }
 
-// 重试请求的函数
 function retryRequest(options, callback, attempts = 3) {
+    log(`[HTTP] 开始请求 ${options.url} (超时:${options.timeout}ms 重试:${attempts}次)`, "🌐");
+
     $httpClient.get(options, function (error, response, data) {
         if (error) {
+            log(`[HTTP] 请求失败 ${options.url}: ${error.code || 'UNKNOWN_ERROR'}`, "❌");
             if (attempts > 1) {
-                log(`Retrying... Attempts left: ${attempts - 1}`);
+                log(`[HTTP] 将重试 ${options.url} 剩余次数:${attempts - 1}`, "🔄");
                 return retryRequest(options, callback, attempts - 1);
             }
             callback(error);
             return;
         }
+
+        log(`[HTTP] 响应成功 ${options.url} 状态码:${response.status} 数据长度:${data.length}`, "✅");
         callback(null, response, data);
     });
 }
 
-// YouTube Premium 检测函数
 function MediaUnlockTest_YouTube_Premium() {
     return new Promise((resolve) => {
+        log("[检测] 开始执行 YouTube Premium 解锁检测", "🔍");
+
         let options = {
             url: 'https://www.youtube.com/premium',
             headers: {
@@ -32,14 +38,15 @@ function MediaUnlockTest_YouTube_Premium() {
 
         retryRequest(options, function (error, response, data) {
             if (error) {
-                log("YouTube Premium: Failed (Network Connection)");
+                log("[检测] YouTube Premium 网络连接失败", "❌");
                 resolve("Failed (Network Connection)");
                 return;
             }
 
+            log("[检测] 开始解析 YouTube Premium 响应数据", "🔍");
             let isCN = data.includes('www.google.cn');
             if (isCN) {
-                log("YouTube Premium: No (Region: CN)");
+                log("[检测] 识别到中国地区限制 (www.google.cn)", "🚫");
                 resolve("No (Region: CN)");
                 return;
             }
@@ -49,27 +56,29 @@ function MediaUnlockTest_YouTube_Premium() {
             let isAvailable = data.match(/ad-free/i);
 
             if (isNotAvailable) {
-                log("YouTube Premium: No");
+                log("[检测] 匹配到地区不可用提示", "🚫");
                 resolve("No");
                 return;
             }
 
             region = region ? region[1] : 'UNKNOWN';
+            log(`[检测] 提取到地区代码: ${region}`, "📍");
 
             if (isAvailable) {
-                log(`YouTube Premium: Yes (Region: ${region})`);
+                log("[检测] 确认 Premium 可用状态", "✅");
                 resolve(`Yes (Region: ${region})`);
             } else {
-                log("YouTube Premium: Failed (Error: PAGE ERROR)");
+                log("[检测] 页面数据异常，无法判断状态", "❓");
                 resolve("Failed (Error: PAGE ERROR)");
             }
         });
     });
 }
 
-// YouTube CDN 检测函数
 function RegionTest_YouTubeCDN() {
     return new Promise((resolve) => {
+        log("[检测] 开始执行 YouTube CDN 检测", "🔍");
+
         let options = {
             url: 'https://redirector.googlevideo.com/report_mapping',
             headers: {
@@ -80,60 +89,60 @@ function RegionTest_YouTubeCDN() {
 
         retryRequest(options, function (error, response, data) {
             if (error) {
-                log("YouTube CDN: Failed (Network Connection)");
+                log("[检测] YouTube CDN 网络连接失败", "❌");
                 resolve("Failed (Network Connection)");
                 return;
             }
 
-            // 获取响应数据中"Debug Info:"之前的内容
+            log(`[检测] 收到 CDN 数据长度: ${data.length}`, "📦");
             let output = data.split('Debug Info:')[0].trim();
 
             if (output.length === 0) {
-                log("YouTube CDN: Failed (No valid data found before 'Debug Info:')");
+                log("[检测] CDN 数据异常：无有效内容", "❓");
                 resolve("Failed (No valid data found before 'Debug Info:')");
                 return;
             }
 
-            // 提取"location"部分
-            let match = output.match(/=>\s*([a-z]{3})/i); // 匹配 "=> location" 部分
+            log(`[检测] 原始 CDN 数据片段: ${output.substring(0, 50)}...`, "🔍");
+            let match = output.match(/=>\s*([a-z]{3})/i);
             let location = match ? match[1] : "Unknown";
 
-            log(`YouTube CDN Response Data:${location}`);
+            log(`[检测] 解析到 CDN 位置标识: ${location}`, "📍");
             resolve(location);
         });
     });
 }
 
-// 执行测试并合并结果
 function handleRequest() {
-    return Promise.all([MediaUnlockTest_YouTube_Premium(), RegionTest_YouTubeCDN()]).then(results => {
-        const youTubeCDNStatus = results[1];
-        const youTubePremiumStatus = results[0];
+    log("========== 开始执行综合检测 ==========", "🚀");
+    return Promise.all([MediaUnlockTest_YouTube_Premium(), RegionTest_YouTubeCDN()])
+        .then(results => {
+            log("========== 检测结果汇总 ==========", "📊");
+            const youTubeCDNStatus = results[1];
+            const youTubePremiumStatus = results[0];
 
-        // 合并检测结果，并使用 <br> 进行分行
-        const combinedMessage = `YouTube CDN: ${youTubeCDNStatus}<br>YouTube Premium: ${youTubePremiumStatus}`;
+            log(`CDN 状态: ${youTubeCDNStatus}`, "📍");
+            log(`Premium 状态: ${youTubePremiumStatus}`, "✅");
 
-        // 返回结果给前端
-        $done({
-            response: {
-                status: 200,
-                body: JSON.stringify({ message: combinedMessage }), // 返回检测结果
-                headers: { "Content-Type": "application/json" }
-            }
+            const combinedMessage = `YouTube CDN: ${youTubeCDNStatus}<br>YouTube Premium: ${youTubePremiumStatus}`;
+
+            $done({
+                response: {
+                    status: 200,
+                    body: JSON.stringify({ message: combinedMessage }),
+                    headers: { "Content-Type": "application/json" }
+                }
+            });
+        }).catch(error => {
+            log(`[错误] 全局捕获异常: ${error}`, "❌");
+            $done({
+                response: {
+                    status: 500,
+                    body: JSON.stringify({ message: "检测失败" }),
+                    headers: { "Content-Type": "application/json" }
+                }
+            });
         });
-    }).catch(error => {
-        log(`发生错误: ${error}`);
-        
-        // 发生错误时返回失败信息
-        $done({
-            response: {
-                status: 500,
-                body: JSON.stringify({ message: "检测失败" }), // 错误信息
-                headers: { "Content-Type": "application/json" }
-            }
-        });
-    });
 }
 
-// 调用 handleRequest 执行检测
 handleRequest();
