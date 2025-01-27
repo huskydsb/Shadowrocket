@@ -1,8 +1,6 @@
 let url = "https://www.max.com/";
 let headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 };
 
 function getTimestamp() {
@@ -16,7 +14,7 @@ const regionToFlag = {
     "FO": "🇫🇴", "FI": "🇫🇮", "FR": "🇫🇷", "GL": "🇬🇱", "HU": "🇭🇺", "PT": "🇵🇹", "MO": "🇲🇴", "ME": "🇲🇪",
     "MK": "🇲🇰", "NO": "🇳🇴", "PL": "🇵🇱", "RO": "🇷🇴", "RS": "🇷🇸", "SK": "🇸🇰", "SI": "🇸🇮", "ES": "🇪🇸",
     "SJ": "🇸🇯", "SE": "🇸🇪", "BE": "🇧🇪", "NL": "🇳🇱", "AR": "🇦🇷", "BZ": "🇧🇿", "BO": "🇧🇴", "BR": "🇧🇷",
-    "CL": "🇨🇱", "CO": "🇨🇴", "CR": "🇨🇷", "EC": "🇪🇨", "SV": "🇸🇻", "GT": "🇬🇹", "GY": "🇬🇾", "HN": "🇭🇳",
+    "CL": "🇨🇱", "CO": "🇨🇴", "CR": "🇨🇷", "EC": "🇪🇨", "SV": "🇸🇻", "GT": "🇬🇷", "GY": "🇬🇾", "HN": "🇭🇳",
     "MX": "🇲🇽", "NI": "🇳🇮", "PA": "🇵🇦", "PY": "🇵🇾", "PE": "🇵🇪", "SR": "🇸🇷", "UY": "🇺🇾", "VE": "🇻🇪",
     "AI": "🇦🇮", "AG": "🇦🇬", "AW": "🇦🇼", "BS": "🇧🇸", "BB": "🇧🇧", "VG": "🇻🇬", "KY": "🇰🇾", "CW": "🇨🇼",
     "DM": "🇩🇲", "DO": "🇩🇴", "GD": "🇬🇩", "HT": "🇭🇹", "JM": "🇯🇲", "MS": "🇲🇸", "KN": "🇰🇳", "LC": "🇱🇨",
@@ -34,9 +32,16 @@ $httpClient.get({ url: url, headers: headers }, function (error, response, body)
     } else if (response.status === 200 && body) {
         console.log(`[${getTimestamp()}] ✅ HBO Max 响应体获取成功`);
 
-        let countryCode = response.headers["Set-Cookie"] ? response.headers["Set-Cookie"].match(/countryCode=([A-Z]{2})/) : null;
-        if (countryCode) {
-            let region = countryCode[1];
+        if (body.length > 10240) {
+            body = body.substring(0, 10240);
+            console.log(`[${getTimestamp()}] 🔹 响应体超过 10KB，已截取前 10KB`);
+        }
+
+        console.log(`[${getTimestamp()}] 🔹 输出前10KB响应体:\n${body}`);
+
+        let regionMatch = body.match(/"userCountry":"([A-Z]{2})"/);
+        if (regionMatch) {
+            let region = regionMatch[1];
             let flag = regionToFlag[region] || "🌍";
             console.log(`[${getTimestamp()}] 🌍 获取的地区信息: ${region} ${flag}`);
 
@@ -49,7 +54,7 @@ $httpClient.get({ url: url, headers: headers }, function (error, response, body)
             ];
 
             if (unlockedRegions.includes(region)) {
-                result.message = `HBO Max: 已解锁 ✅ (地区: ${flag}${region} )`;
+                result.message = `HBO Max: 已解锁 ✅ (地区: ${flag}${region})`;
                 console.log(`[${getTimestamp()}] 🟢 HBO Max 检测结果 - ${result.message}`);
             } else {
                 result.message = `HBO Max: 未解锁 ❌ (地区: ${region} ${flag})`;
