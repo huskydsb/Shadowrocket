@@ -14,7 +14,7 @@ const html = `
     <!-- 为书签添加图标 -->
     <link rel="icon" type="image/png" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="64x64">
 
-    <title>流媒体解锁测试</title>
+    <title>常规流媒体服务解锁查询</title>
     <style>
         /* 页面基本样式 */
         body {
@@ -30,6 +30,7 @@ const html = `
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            transition: background-color 0.3s ease;
         }
 
         /* 顶部 logo 和标题 */
@@ -47,8 +48,8 @@ const html = `
         }
 
         .header img {
-            width: 80px; /* 放大 Logo */
-            height: 80px; /* 放大 Logo */
+            width: 60px; /* 放大 Logo */
+            height: 60px; /* 放大 Logo */
             margin-right: 15px; /* logo 与标题的间距 */
         }
 
@@ -64,22 +65,22 @@ const html = `
         }
 
         /* 模块容器 */
-.container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
-    width: 90%;
-    max-width: 1000px;
-    margin-bottom: 50px;
-    padding: 10px;
-}
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            width: 90%;
+            max-width: 1000px;
+            margin-bottom: 50px;
+            padding: 10px;
+        }
 
-/* 新增的媒体查询部分 */
-@media (max-width: 375px) {
-    .container {
-        grid-template-columns: repeat(2, 1fr); /* 设置屏幕宽度小于 375px 时使用双列布局 */
-    }
-}
+        /* 新增的媒体查询部分 */
+        @media (max-width: 375px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr); /* 设置屏幕宽度小于 375px 时使用双列布局 */
+            }
+        }
 
         .module {
             display: flex;
@@ -93,6 +94,7 @@ const html = `
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: all 0.3s ease-in-out;
+            color: #444; /* 字体颜色 */
         }
 
         .module:hover {
@@ -107,11 +109,19 @@ const html = `
             object-fit: contain;
         }
 
-        .module span {
-            font-size: 18px;
-            font-weight: 600;
-            color: #444;
-        }
+ /* 默认（白天模式）下的模块名字颜色 */
+.module span {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333; /* 白天模式下的颜色 */
+}
+
+/* 夜览模式下的模块名字颜色 */
+@media (prefers-color-scheme: dark) {
+    .module span {
+        color: #999; /* 夜览模式下的颜色 */
+    }
+}
 
         /* 弹窗样式 */
         #result-popup {
@@ -129,6 +139,7 @@ const html = `
             display: none;
             z-index: 1000;
             box-sizing: border-box;
+            color: #444; /* 字体颜色 */
         }
 
         #result-popup h2 {
@@ -177,6 +188,43 @@ const html = `
         #copy-btn:hover {
             background-color: #388e3c;
         }
+
+        /* 夜间模式 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+            }
+
+            .module {
+                background-color: #333;
+                color: #fff;
+            }
+
+            .module:hover {
+                background-color: #444;
+            }
+
+            #result-popup {
+                background-color: #333;
+                color: #fff;
+            }
+
+            #result-popup h2 {
+                color: #fff;
+            }
+
+            #result-popup p {
+                color: #bbb;
+            }
+
+            #close-btn {
+                background-color: #d32f2f;
+            }
+
+            #copy-btn {
+                background-color: #388e3c;
+            }
+        }
     </style>
 </head>
 <body>
@@ -184,7 +232,7 @@ const html = `
     <div class="header">
         <a href="https://t.me/ShadowrocketApp" target="_blank">
             <img class="logo" src="https://www.shadowrocketdownload.com/img/logo.png" alt="Logo">
-            <h1>流媒体解锁测试</h1>
+            <h1>常规流媒体服务解锁查询</h1>
         </a>
     </div>
 
@@ -205,20 +253,20 @@ const html = `
         const baseUrl = "https://streaming.test"; // 请修改为实际后端地址
 
         const streamingServices = [
-            { name: 'YouTube', logo: 'https://raw.githubusercontent.com/huskydsb/icon/main/img/YouTube.png', endpoint: 'youtube' },
+            { name: 'YouTube', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg', endpoint: 'youtube' },
             { name: 'Netflix', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg', endpoint: 'netflix' },
-            { name: 'ChatGPT', logo: 'https://raw.githubusercontent.com/huskydsb/icon/main/img/ChatGPT.png', endpoint: 'chatgpt' },
-            { name: 'TikTok', logo: 'https://www.tiktok.com/favicon.ico', endpoint: 'tiktok' },
-            { name: 'Disney+', logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg', endpoint: 'disney' },
-            { name: 'Spotify', logo: 'https://m.media-amazon.com/images/I/51rttY7a+9L.png', endpoint: 'spotify' },
-            { name: 'Scamalytics', logo: 'https://raw.githubusercontent.com/huskydsb/icon/main/img/Scamalytics.png', endpoint: 'scamalytics' },
-            { name: 'Bing', logo: 'https://static.wikia.nocookie.net/logopedia/images/d/d9/Bing_Chat_2023.svg', endpoint: 'bing' },            
-            { name: 'Bilibili', logo: 'https://img.icons8.com/?size=512&id=5E24fZ9ORelo&format=png', endpoint: 'bilibili' },
+            { name: 'ChatGPT', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/ChatGPT-Logo.svg/2048px-ChatGPT-Logo.svg.png', endpoint: 'chatgpt' },
+            { name: 'TikTok', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/TikTok_logo.svg/2560px-TikTok_logo.svg.png', endpoint: 'tiktok' },
+            { name: 'Disney+', logo: 'https://upload.wikimedia.org/wikipedia/commons/archive/7/77/20230514165915%21Disney_Plus_logo.svg', endpoint: 'disney' },
+            { name: 'Spotify', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Spotify_logo_with_text.svg/2560px-Spotify_logo_with_text.svg.png', endpoint: 'spotify' },
+            { name: 'Scamalytics', logo: 'https://scamalytics.com/wp-content/uploads/2016/09/Scamalytics_Logo_horizontal_no_background_no_strapline-1024x226.png', endpoint: 'scamalytics' },
+            { name: 'Bing', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Bing_Fluent_Logo_Text.svg/2535px-Bing_Fluent_Logo_Text.svg.png', endpoint: 'bing' },            
+            { name: 'Bilibili', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b7/Bilibili_logo.svg/2560px-Bilibili_logo.svg.png', endpoint: 'bilibili' },
             { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/2048px-Steam_icon_logo.svg.png', endpoint: 'steam' },
-            { name: 'Bahamut', logo: 'https://i2.bahamut.com.tw/anime/logo.svg', endpoint: 'bahamut' },
             { name: 'PrimeVideo', logo: 'https://logos-world.net/wp-content/uploads/2021/04/Amazon-Prime-Video-Logo.png', endpoint: 'primevideo' },
             { name: 'HBO Max', logo: 'https://logotyp.us/file/hbo-max.svg', endpoint: 'max' },
-            { name: 'ニコニコ', logo: 'https://nichegamer.com/wp-content/uploads/2024/06/niconico-06-23-24-2.jpg', endpoint: 'nicovideo' }
+						{ name: 'Bahamut', logo: 'https://i2.bahamut.com.tw/anime/logo.svg', endpoint: 'bahamut' },
+            { name: 'ニコニコ', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/niconco.png', endpoint: 'nicovideo' }
         ];
 
         // 获取 HTML 元素
