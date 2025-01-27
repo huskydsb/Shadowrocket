@@ -4,19 +4,14 @@ const html = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ffffff"> <!-- 设置主题颜色，避免黑边 -->
-    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- 启用“应用程序”模式 -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- 设置状态栏样式 -->
-    
-    <!-- 网页图标 -->
-    <link rel="icon" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="192x192"> <!-- 推荐使用 192x192 图标 -->
-    <link rel="apple-touch-icon" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="180x180"> <!-- iOS 上的应用图标 -->
-    <!-- 为书签添加图标 -->
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="180x180">
     <link rel="icon" type="image/png" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="64x64">
-
     <title>常规流媒体服务解锁查询</title>
     <style>
-        /* 页面基本样式 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
             background-color: #f7f7f7;
@@ -32,27 +27,23 @@ const html = `
             min-height: 100vh;
             transition: background-color 0.3s ease;
         }
-
-        /* 顶部 logo 和标题 */
         .header {
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 30px;
-            margin-top: 16px;  /* 向下移动 logo 和标题 */
+            margin-top: 16px;
         }
         .header a {
             display: flex;
             align-items: center;
             text-decoration: none;
         }
-
         .header img {
-            width: 60px; /* 放大 Logo */
-            height: 60px; /* 放大 Logo */
-            margin-right: 15px; /* logo 与标题的间距 */
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
         }
-
         .header h1 {
             font-size: 28px;
             font-weight: bold;
@@ -63,8 +54,6 @@ const html = `
             margin: 0;
             text-align: center;
         }
-
-        /* 模块容器 */
         .container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -74,14 +63,11 @@ const html = `
             margin-bottom: 50px;
             padding: 10px;
         }
-
-        /* 新增的媒体查询部分 */
         @media (max-width: 375px) {
             .container {
-                grid-template-columns: repeat(2, 1fr); /* 设置屏幕宽度小于 375px 时使用双列布局 */
+                grid-template-columns: repeat(2, 1fr);
             }
         }
-
         .module {
             display: flex;
             flex-direction: column;
@@ -94,36 +80,28 @@ const html = `
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: all 0.3s ease-in-out;
-            color: #444; /* 字体颜色 */
+            color: #444;
         }
-
         .module:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
-
         .module img {
             width: 80px;
             height: 80px;
             margin-bottom: 15px;
             object-fit: contain;
         }
-
- /* 默认（白天模式）下的模块名字颜色 */
-.module span {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333; /* 白天模式下的颜色 */
-}
-
-/* 夜览模式下的模块名字颜色 */
-@media (prefers-color-scheme: dark) {
-    .module span {
-        color: #999; /* 夜览模式下的颜色 */
-    }
-}
-
-        /* 弹窗样式 */
+        .module span {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        @media (prefers-color-scheme: dark) {
+            .module span {
+                color: #999;
+            }
+        }
         #result-popup {
             position: fixed;
             top: 50%;
@@ -139,28 +117,24 @@ const html = `
             display: none;
             z-index: 1000;
             box-sizing: border-box;
-            color: #444; /* 字体颜色 */
+            color: #444;
         }
-
         #result-popup h2 {
             margin: 0 0 15px 0;
             font-size: 20px;
             color: #444;
             text-align: center;
         }
-
         #result-popup p {
             margin: 0 0 20px 0;
             font-size: 16px;
             text-align: center;
             color: #666;
         }
-
         #result-popup .buttons {
             display: flex;
             justify-content: space-between;
         }
-
         #result-popup button {
             padding: 12px 25px;
             border: none;
@@ -170,57 +144,44 @@ const html = `
             width: 48%;
             transition: background-color 0.3s;
         }
-
         #close-btn {
             background-color: #f44336;
             color: white;
         }
-
         #close-btn:hover {
             background-color: #d32f2f;
         }
-
         #copy-btn {
             background-color: #4caf50;
             color: white;
         }
-
         #copy-btn:hover {
             background-color: #388e3c;
         }
-
-        /* 夜间模式 */
         @media (prefers-color-scheme: dark) {
             body {
                 background-color: #121212;
             }
-
             .module {
                 background-color: #333;
                 color: #fff;
             }
-
             .module:hover {
                 background-color: #444;
             }
-
             #result-popup {
                 background-color: #333;
                 color: #fff;
             }
-
             #result-popup h2 {
                 color: #fff;
             }
-
             #result-popup p {
                 color: #bbb;
             }
-
             #close-btn {
                 background-color: #d32f2f;
             }
-
             #copy-btn {
                 background-color: #388e3c;
             }
@@ -228,7 +189,6 @@ const html = `
     </style>
 </head>
 <body>
-    <!-- 添加 logo 和标题，logo 被包裹在 <a> 标签中 -->
     <div class="header">
         <a href="https://t.me/ShadowrocketApp" target="_blank">
             <img class="logo" src="https://www.shadowrocketdownload.com/img/logo.png" alt="Logo">
@@ -238,7 +198,6 @@ const html = `
 
     <div id="container" class="container"></div>
 
-    <!-- 弹出模块 -->
     <div id="result-popup">
         <h2 id="popup-title"></h2>
         <p id="popup-message"></p>
@@ -249,8 +208,7 @@ const html = `
     </div>
 
     <script>
-        // 配置基础 URL
-        const baseUrl = "https://streaming.test"; // 请修改为实际后端地址
+        const baseUrl = "https://streaming.test";
 
         const streamingServices = [
             { name: 'YouTube', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg', endpoint: 'youtube' },
@@ -265,11 +223,10 @@ const html = `
             { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/2048px-Steam_icon_logo.svg.png', endpoint: 'steam' },
             { name: 'PrimeVideo', logo: 'https://logos-world.net/wp-content/uploads/2021/04/Amazon-Prime-Video-Logo.png', endpoint: 'primevideo' },
             { name: 'HBO Max', logo: 'https://logotyp.us/file/hbo-max.svg', endpoint: 'max' },
-						{ name: 'Bahamut', logo: 'https://i2.bahamut.com.tw/anime/logo.svg', endpoint: 'bahamut' },
+            { name: 'Bahamut', logo: 'https://i2.bahamut.com.tw/anime/logo.svg', endpoint: 'bahamut' },
             { name: 'ニコニコ', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/niconco.png', endpoint: 'nicovideo' }
         ];
 
-        // 获取 HTML 元素
         const container = document.getElementById('container');
         const resultPopup = document.getElementById('result-popup');
         const popupTitle = document.getElementById('popup-title');
@@ -277,7 +234,6 @@ const html = `
         const closeBtn = document.getElementById('close-btn');
         const copyBtn = document.getElementById('copy-btn');
 
-        // 动态创建流媒体模块
         function createModule(service) {
             const moduleDiv = document.createElement('div');
             moduleDiv.className = 'module';
@@ -289,12 +245,10 @@ const html = `
             return moduleDiv;
         }
 
-        // 渲染所有模块到页面
         streamingServices.forEach(service => {
             container.appendChild(createModule(service));
         });
 
-        // 测试流媒体服务
         async function runTest(name, endpoint) {
             const url = \`\${baseUrl}/\${endpoint}\`;
 
@@ -305,31 +259,27 @@ const html = `
             try {
                 const response = await fetch(url, { method: 'GET', timeout: 10000 });
                 if (!response.ok) throw new Error('请求失败');
-                const result = await response.json(); // 假设服务器返回的是 JSON 格式的响应
+                const result = await response.json();
 
                 popupTitle.textContent = \`\${name} 测试结果\`;
-
-                // 提取并显示 message 字段的值
                 const resultMessage = result.message || "未知结果";
 
-                popupMessage.innerHTML = resultMessage; // 使用 innerHTML 来显示包含 <br> 的内容
+                popupMessage.innerHTML = resultMessage;
                 console.log(\`\${name} 测试结果：\`, resultMessage);
             } catch (error) {
                 popupTitle.textContent = \`\${name} 测试失败\`;
-                popupMessage.textContent = '请检查网络连接或脚本错误';
+                popupMessage.textContent = '请检查网络连接或分流规则';
             }
         }
 
-        // 关闭弹窗
         closeBtn.addEventListener('click', () => {
             resultPopup.style.display = 'none';
         });
 
-        // 复制按钮功能
         copyBtn.addEventListener('click', () => {
             const message = popupMessage.textContent || popupMessage.innerText;
-            navigator.clipboard.writeText(message); // 移除复制成功弹窗提示
-            resultPopup.style.display = 'none'; // 复制后自动关闭弹窗
+            navigator.clipboard.writeText(message);
+            resultPopup.style.display = 'none';
         });
     </script>
 </body>
