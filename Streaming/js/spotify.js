@@ -7,16 +7,16 @@ const token = $persistentStore.read("ipinfo_token") || "";
 
 (async () => {
   try {
-    console.log("开始 Spotify 测试...");
+    console.log(`[${new Date().toLocaleString()}] ▶️ 开始 Spotify 测试...`);
     await Spotify_Test();
-    console.log("Spotify 测试完成");
+    console.log(`[${new Date().toLocaleString()}] ✅ Spotify 测试完成`);
 
-    console.log("开始获取 Spotify 价格...");
+    console.log(`[${new Date().toLocaleString()}] ▶️ 开始获取 Spotify 价格...`);
     await Spotify_Price();
-    console.log("Spotify 价格获取完成");
+    console.log(`[${new Date().toLocaleString()}] ✅ Spotify 价格获取完成`);
   } catch (error) {
     result.message = "❌发生错误: " + error.message;
-    console.log("错误信息: " + error.message);
+    console.log(`[${new Date().toLocaleString()}] ❌ 错误信息: ${error.message}`);
     return $done({
       response: {
         status: 200,
@@ -26,12 +26,11 @@ const token = $persistentStore.read("ipinfo_token") || "";
     });
   }
 
-  // 将结果封装到 result.message 中，并确保格式正确
   result.message = `🎶查询成功 - Spotify 状态与价格<br>`;
   result.message += `Spotify Status: ${spotify}<br>`;
-  result.message += `Price: ${lastPrice || "N/A"}<br>`; // 如果没有价格则返回N/A
+  result.message += `Price: ${lastPrice || "N/A"}<br>`; 
 
-  console.log("返回结果: " + JSON.stringify(result));
+  console.log(`[${new Date().toLocaleString()}] 📤 返回结果: ${JSON.stringify(result)}`);
 
   return $done({
     response: {
@@ -52,33 +51,44 @@ async function Spotify_Test() {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     },
     body: "birth_day=11&birth_month=11&birth_year=2000&collect_personal_info=undefined&creation_flow=&creation_point=https%3A%2F%2Fwww.spotify.com%2Fhk-en%2F&displayname=Gay%20Lord&gender=male&iagree=1&key=a1e486e2729f46d6bb368d6b2bcda326&platform=www&referrer=&send-email=0&thirdpartyemail=0&identifier_token=AgE6YTvEzkReHNfJpO114514",
-    timeout: 10000, // 设置超时
+    timeout: 10000,
   };
 
-  console.log("发送 Spotify 测试请求...");
-  // 使用 $httpClient 发送 POST 请求
+  console.log(`[${new Date().toLocaleString()}] 📤 发送 Spotify 测试请求...`);
   return new Promise((resolve, reject) => {
     $httpClient.post(options, (error, response, body) => {
       if (error) {
+        console.log(`[${new Date().toLocaleString()}] ❌ Spotify 测试请求失败: ${error}`);
         reject("❌请求失败: " + error);
       } else {
-        console.log("Spotify 注册响应: " + body);
-        var obj = JSON.parse(body);
-        if (obj.status == "320" || obj.status == "120") {
-          spotify = "🔴No";
-        } else if (obj.status == "311") {
-          spotify_country = obj.country;
-          spotify = "🎉Yes" + arrow + getCountryFlagEmoji(obj.country) + spotify_country;
+        console.log(`[${new Date().toLocaleString()}] 📥 Spotify 注册响应: ${body}`);
+        try {
+          var obj = JSON.parse(body);
+          if (obj.status == "320" || obj.status == "120") {
+            spotify = "🔴No";
+          } else if (obj.status == "311") {
+            let spotify_country = obj.country;
+            spotify = "🎉Yes" + arrow + getCountryFlagEmoji(obj.country) + spotify_country;
+          }
+          console.log(`[${new Date().toLocaleString()}] ℹ️🎵 Spotify 状态: ${spotify}`);
+          resolve();
+        } catch (e) {
+          console.log(`[${new Date().toLocaleString()}] ❌ JSON 解析失败: ${e}`);
+          reject("❌响应解析失败");
         }
-        console.log("🎵Spotify: " + spotify);
-        resolve();
       }
     });
   });
 }
 
 async function Spotify_Price() {
-  var lang = spotify_country ? spotify_country.toLowerCase() : await getLanguage();
+  let lang;
+  try {
+    lang = spotify_country ? spotify_country.toLowerCase() : await getLanguage();
+  } catch (e) {
+    console.log(`[${new Date().toLocaleString()}] ❌ 获取语言失败: ${e}`);
+    lang = "us";
+  }
 
   var options = {
     url: `https://www.spotify.com/${lang}/premium/`,
@@ -92,41 +102,45 @@ async function Spotify_Price() {
       "User-Agent": `Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1`,
       "Accept-Language": `zh-CN,zh-Hans;q=0.9`,
     },
-    timeout: 10000, // 设置超时
+    timeout: 10000,
   };
 
-  console.log("发送 Spotify 价格请求...");
-  // 使用 $httpClient 发送 GET 请求
+  console.log(`[${new Date().toLocaleString()}] 📤 发送价格请求到: ${options.url}`);
   return new Promise((resolve, reject) => {
     $httpClient.get(options, (error, response, body) => {
       if (error) {
+        console.log(`[${new Date().toLocaleString()}] ❌ 价格请求失败: ${error}`);
         reject("❌请求失败: " + error);
       } else {
-        console.log("Spotify 价格响应: " + body);
+        console.log(`[${new Date().toLocaleString()}] 📥 价格响应状态码: ${response.status}`);
         let matchResult;
         const regex = /"primaryPriceDescription"\s*:\s*"([^"]+)"/g;
 
-        while ((matchResult = regex.exec(body)) !== null) {
-          const price = matchResult[1];
-          if (!price.includes("Free")) {
-            lastPrice = price.trim().replace(/\s*\/\s*/, "/");
+        try {
+          while ((matchResult = regex.exec(body)) !== null) {
+            const price = matchResult[1];
+            if (!price.includes("Free")) {
+              lastPrice = price.trim().replace(/\s*\/\s*/, "/");
+            }
           }
+          if (lastPrice !== null) {
+            console.log(`[${new Date().toLocaleString()}] ✅ 解析价格成功: ${lastPrice}`);
+          } else {
+            lastPrice = "N/A";
+            console.log(`[${new Date().toLocaleString()}] ℹ️ 未找到家庭套餐价格`);
+          }
+          resolve();
+        } catch (e) {
+          console.log(`[${new Date().toLocaleString()}] ❌ 价格解析失败: ${e}`);
+          reject("❌价格解析失败");
         }
-
-        if (lastPrice !== null) {
-          console.log(`🎶 Last Primary Price: ${lastPrice}`);
-        } else {
-          lastPrice = "N/A";
-          console.log("🎶 No family plan found");
-        }
-
-        resolve();
       }
     });
   });
 }
 
 async function getCountry() {
+  console.log(`[${new Date().toLocaleString()}] ▶️ 开始获取IP信息...`);
   var options = {
     url: `https://ipinfo.io/json?token=${token}`,
     headers: {
@@ -141,22 +155,37 @@ async function getCountry() {
   return new Promise((resolve, reject) => {
     $httpClient.get(options, (error, response, body) => {
       if (error) {
+        console.log(`[${new Date().toLocaleString()}] ❌ IP查询失败: ${error}`);
         reject("❌IP查询失败: " + error);
       } else {
-        console.log("IP查询响应: " + body);
-        var obj = JSON.parse(body);
-        if (!obj.ip) {
-          console.log("🔴IP查询失败!");
-          reject("🔴IP查询失败!");
+        console.log(`[${new Date().toLocaleString()}] 📥 IP查询响应: ${body}`);
+        try {
+          var obj = JSON.parse(body);
+          if (!obj.ip) {
+            console.log(`[${new Date().toLocaleString()}] ❌ 无效的IP响应`);
+            reject("🔴IP查询失败!");
+          }
+          console.log(`[${new Date().toLocaleString()}] ✅ 获取国家代码: ${obj.country}`);
+          resolve(obj.country.toLowerCase());
+        } catch (e) {
+          console.log(`[${new Date().toLocaleString()}] ❌ IP响应解析失败: ${e}`);
+          reject("❌IP响应解析失败");
         }
-        resolve(obj.country.toLowerCase());
       }
     });
   });
 }
 
 async function getLanguage() {
-  var country = await getCountry();
+  console.log(`[${new Date().toLocaleString()}] ▶️ 开始获取语言设置...`);
+  let country;
+  try {
+    country = await getCountry();
+    console.log(`[${new Date().toLocaleString()}] ℹ️ 使用国家代码: ${country}`);
+  } catch (e) {
+    country = "us";
+    console.log(`[${new Date().toLocaleString()}] ℹ️ 使用默认国家代码: ${country}`);
+  }
 
   var options = {
     url: `https://www.spotify.com/${country}/premium/`,
@@ -170,34 +199,37 @@ async function getLanguage() {
       "User-Agent": `Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1`,
       "Accept-Language": `zh-CN,zh-Hans;q=0.9`,
     },
-    timeout: 10000, // 设置超时
+    timeout: 10000,
   };
 
   return new Promise((resolve, reject) => {
     $httpClient.get(options, (error, response, body) => {
       if (error) {
+        console.log(`[${new Date().toLocaleString()}] ❌ 语言请求失败: ${error}`);
         reject("❌获取语言失败: " + error);
       } else {
-        console.log("获取语言响应: " + body);
-        const regex =
-          /updatePreferredLocaleUrl\"\:\"https:\/\/www\.spotify\.com\/(.*)\/update-preferred-locale\//;
-
-        let ret = regex.exec(body);
-        if (ret != null && ret.length === 2) {
-          region = ret[1];
-        } else {
-          region = `${country}`;
+        console.log(`[${new Date().toLocaleString()}] 📥 语言响应状态码: ${response.status}`);
+        try {
+          const regex =
+            /updatePreferredLocaleUrl\"\:\"https:\/\/www\.spotify\.com\/(.*)\/update-preferred-locale\//;
+          let ret = regex.exec(body);
+          let region = ret != null && ret.length === 2 ? ret[1] : country;
+          console.log(`[${new Date().toLocaleString()}] ✅ 最终使用地区: ${region}`);
+          resolve(region);
+        } catch (e) {
+          console.log(`[${new Date().toLocaleString()}] ❌ 语言解析失败: ${e}`);
+          resolve(country);
         }
-        console.log("Spotify地区: " + region);
-        resolve(region);
       }
     });
   });
 }
 
 function getCountryFlagEmoji(countryCode) {
-  if (countryCode.toUpperCase() == "TW") {
+  console.log(`[${new Date().toLocaleString()}] ℹ️ 转换国家代码到旗帜: ${countryCode}`);
+  if (countryCode.toUpperCase() === "TW") {
     countryCode = "WS";
+    console.log(`[${new Date().toLocaleString()}] ℹ️ 特殊处理TW地区代码`);
   }
   const codePoints = countryCode
     .toUpperCase()
