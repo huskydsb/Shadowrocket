@@ -1,11 +1,33 @@
 async function WebTest_OpenAI() {
     const log = (message) => {
-        console.log(message);
+        console.log(`[${new Date().toLocaleString()}] ${message}`);
     };
 
     try {
+        log("🚀 开始检测 ChatGPT 服务可用性...");
+
+        const cookieUrl = 'https://api.openai.com/compliance/cookie_requirements';
+        log(`🔍 正在发起第一个请求：检查 Cookie 要求...`);
+        log(`📄 请求 URL: ${cookieUrl}`);
+        log(`📄 请求头: ${JSON.stringify({
+            'authority': 'api.openai.com',
+            'accept': '*/*',
+            'accept-language': 'en-US,en;q=0.9',
+            'authorization': 'Bearer null',
+            'content-type': 'application/json',
+            'origin': 'https://platform.openai.com',
+            'referer': 'https://platform.openai.com/',
+            'sec-ch-ua': '',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-site',
+            'user-agent': ''
+        }, null, 2)}`);
+
         $httpClient.get({
-            url: 'https://api.openai.com/compliance/cookie_requirements',
+            url: cookieUrl,
             headers: {
                 'authority': 'api.openai.com',
                 'accept': '*/*',
@@ -30,18 +52,40 @@ async function WebTest_OpenAI() {
                     status: "failed",
                     message: "网络连接失败"
                 };
-                log(`检测结果: ${JSON.stringify(result)}`);
+                log(`❌ 检测结果: ${JSON.stringify(result)}`);
+                log(`🔍 错误详情: ${error}`);
                 $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
                 return;
             }
 
-            log("ChatGPT: 已收到 Cookie 请求的响应。");
+            log(`✅ ChatGPT: 已收到 Cookie 请求的响应。`);
+            log(`📄 响应状态码: ${response.status}`);
+            log(`📄 响应头: ${JSON.stringify(response.headers, null, 2)}`);
+            log(`📄 响应体内容: ${data}`);
             const tmpresult1 = data.toLowerCase().includes('unsupported_country');
-            log(`Cookie 请求响应: ${data}`);
+            log(`🔍 是否包含 'unsupported_country': ${tmpresult1}`);
 
             if (!tmpresult1) {
+                const vpnUrl = 'https://ios.chat.openai.com/';
+                log(`🔍 正在发起第二个请求：检查 VPN 限制...`);
+                log(`📄 请求 URL: ${vpnUrl}`);
+                log(`📄 请求头: ${JSON.stringify({
+                    'authority': 'ios.chat.openai.com',
+                    'accept': '*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'accept-language': 'en-US,en;q=0.9',
+                    'sec-ch-ua': '',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'sec-fetch-dest': 'document',
+                    'sec-fetch-mode': 'navigate',
+                    'sec-fetch-site': 'none',
+                    'sec-fetch-user': '?1',
+                    'upgrade-insecure-requests': '1',
+                    'user-agent': ''
+                }, null, 2)}`);
+
                 $httpClient.get({
-                    url: 'https://ios.chat.openai.com/',
+                    url: vpnUrl,
                     headers: {
                         'authority': 'ios.chat.openai.com',
                         'accept': '*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -62,14 +106,18 @@ async function WebTest_OpenAI() {
                             status: "failed",
                             message: "网络连接失败"
                         };
-                        log(`检测结果: ${JSON.stringify(result)}`);
+                        log(`❌ 检测结果: ${JSON.stringify(result)}`);
+                        log(`🔍 错误详情: ${error2}`);
                         $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
                         return;
                     }
 
-                    log("ChatGPT: 已收到 VPN 请求的响应。");
+                    log(`✅ ChatGPT: 已收到 VPN 请求的响应。`);
+                    log(`📄 响应状态码: ${response2.status}`);
+                    log(`📄 响应头: ${JSON.stringify(response2.headers, null, 2)}`);
+                    log(`📄 响应体内容: ${data2}`);
                     const tmpresult2 = data2.toLowerCase().includes('vpn');
-                    log(`VPN 检测响应: ${data2}`);
+                    log(`🔍 是否包含 'vpn': ${tmpresult2}`);
 
                     if (!tmpresult1 && !tmpresult2) {
                         result = {
@@ -97,7 +145,8 @@ async function WebTest_OpenAI() {
                             message: "ChatGPT: 检测失败（未知错误）。"
                         };
                     }
-                    log(`检测结果: ${JSON.stringify(result)}`);
+
+                    log(`🎉 检测结果: ${JSON.stringify(result)}`);
                     $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
                 });
             } else {
@@ -105,7 +154,7 @@ async function WebTest_OpenAI() {
                     status: "failed",
                     message: "ChatGPT: 对不起，该服务在您的国家不可用。"
                 };
-                log(`检测结果: ${JSON.stringify(result)}`);
+                log(`❌ 检测结果: ${JSON.stringify(result)}`);
                 $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
             }
         });
@@ -116,7 +165,8 @@ async function WebTest_OpenAI() {
             status: "failed",
             message: errorMsg
         };
-        log(`检测结果: ${JSON.stringify(result)}`);
+        log(`❌ 检测结果: ${JSON.stringify(result)}`);
+        log(`🔍 错误详情: ${error}`);
         $done({ response: { status: 200, body: JSON.stringify(result), headers: { "Content-Type": "application/json" } } });
     }
 }
