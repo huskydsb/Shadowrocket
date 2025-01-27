@@ -29,7 +29,7 @@ PrimeVideo = type=http-request, pattern=^https:\/\/streaming\.test\/primevideo\/
 
 Bing = type=http-request, pattern=^https:\/\/streaming\.test\/bing\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/bing.js, timeout=60
 
-ニコニコ = type=http-request, pattern=^https:\/\/streaming\.test\/niconico\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/niconico.js, timeout=60
+ニコニコ = type=http-request, pattern=^https:\/\/streaming\.test\/nicovideo\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/niconico.js, timeout=60
 
 Front-end = type=http-request, pattern=^https:\/\/streaming\.test\/$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/front-end.js, timeout=60
 
