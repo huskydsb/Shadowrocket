@@ -2,16 +2,26 @@ const html = `
 <!DOCTYPE html>
 <html lang="zh">
 <head>
+    <!-- 设置字符编码为UTF-8 -->
     <meta charset="UTF-8">
+    <!-- 设置视口大小，使页面适应移动设备的宽度 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 设置主题颜色 -->
     <meta name="theme-color" content="#ffffff">
+    <!-- 设置为支持Web应用模式 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- 设置Web应用状态栏风格 -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- 设置网站图标 -->
     <link rel="icon" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="192x192">
+    <!-- 设置苹果设备的触控图标 -->
     <link rel="apple-touch-icon" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="180x180">
+    <!-- 设置PNG格式的图标 -->
     <link rel="icon" type="image/png" href="https://www.shadowrocketdownload.com/img/logo.png" sizes="64x64">
+    <!-- 页面标题 -->
     <title>常规流媒体服务解锁查询</title>
     <style>
+        /* 设置页面字体和背景 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
             background-color: #f7f7f7;
@@ -27,6 +37,7 @@ const html = `
             min-height: 100vh;
             transition: background-color 0.3s ease;
         }
+        /* 设置页面标题区样式 */
         .header {
             display: flex;
             align-items: center;
@@ -39,11 +50,13 @@ const html = `
             align-items: center;
             text-decoration: none;
         }
+        /* 设置Logo样式 */
         .header img {
             width: 60px;
             height: 60px;
             margin-right: 15px;
         }
+        /* 设置标题文本样式，背景渐变效果 */
         .header h1 {
             font-size: 28px;
             font-weight: bold;
@@ -54,6 +67,7 @@ const html = `
             margin: 0;
             text-align: center;
         }
+        /* 设置容器的样式，使用网格布局 */
         .container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -63,6 +77,7 @@ const html = `
             margin-bottom: 50px;
             padding: 10px;
         }
+        /* 响应式设计，当宽度小于480px时 */
         @media (max-width: 480px) {
             .container {
                 grid-template-columns: repeat(2, minmax(120px, 1fr));
@@ -79,11 +94,13 @@ const html = `
                 font-size: 16px;
             }
         }
+        /* 响应式设计，当宽度在481px到768px之间时 */
         @media (min-width: 481px) and (max-width: 768px) {
             .container {
                 grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             }
         }
+        /* 设置每个模块的样式 */
         .module {
             display: flex;
             flex-direction: column;
@@ -100,93 +117,27 @@ const html = `
             color: #444;
             aspect-ratio: 1/1;
         }
+        /* 模块悬浮时的效果 */
         .module:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
+        /* 设置模块图标样式 */
         .module img {
             width: 80px;
             height: 80px;
             margin-bottom: 15px;
             object-fit: contain;
         }
+        /* 设置模块标题文本样式 */
         .module span {
             font-size: 18px;
             font-weight: 600;
             color: #333;
             text-align: center;
         }
+        /* 设置暗黑模式下的样式 */
         @media (prefers-color-scheme: dark) {
-            .module span {
-                color: #999;
-            }
-        }
-        #result-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 75%;
-            max-width: 600px;
-            background-color: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            display: none;
-            z-index: 1000;
-            box-sizing: border-box;
-            color: #444;
-        }
-        body {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        #result-popup h2 {
-            margin: 0 0 15px 0;
-            font-size: 20px;
-            color: #444;
-            text-align: center;
-        }
-        #result-popup p {
-            margin: 0 0 20px 0;
-            font-size: 16px;
-            text-align: center;
-            color: #666;
-        }
-        #result-popup {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        #result-popup .buttons {
-            display: flex;
-            justify-content: space-between;
-        }
-        #result-popup button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 48%;
-            transition: background-color 0.3s;
-        }
-        #close-btn, #copy-btn {
-            background: linear-gradient(45deg, #ff0077, #5900b3);
-            border: none;
-            color: white;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        #close-btn:hover, #copy-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #121212;
-            }
             .module {
                 background: rgba(255, 255, 255, 0.1);
                 backdrop-filter: blur(10px);
@@ -202,9 +153,13 @@ const html = `
                 transform: translateY(-10px);
                 box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
             }
+            body {
+                background-color: #121212;
+            }
             #result-popup {
-                background-color: #333;
-                color: #fff;
+                background-color: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.3);
             }
             #result-popup h2 {
                 color: #fff;
@@ -219,9 +174,71 @@ const html = `
                 background-color: #388e3c;
             }
         }
+        /* 设置弹出框的样式 */
+        #result-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 75%;
+            max-width: 600px;
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            display: none;
+            z-index: 1000;
+            box-sizing: border-box;
+            color: #444;
+        }
+        /* 弹出框标题样式 */
+        #result-popup h2 {
+            margin: 0 0 15px 0;
+            font-size: 20px;
+            color: #444;
+            text-align: center;
+        }
+        /* 弹出框消息文本样式 */
+        #result-popup p {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            text-align: center;
+            color: #666;
+        }
+        /* 设置按钮容器的样式 */
+        .buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 30px;
+        }
+        /* 设置按钮的样式 */
+        #close-btn, #copy-btn {
+            background: linear-gradient(45deg, #4a90e2, #6fcf97);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+            padding: 10px 40px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        /* 按钮悬浮时的效果 */
+        #close-btn:hover, #copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        /* 按钮点击时的效果 */
+        #close-btn:active, #copy-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>
+    <!-- 页面标题区域 -->
     <div class="header">
         <a href="https://t.me/ShadowrocketApp" target="_blank">
             <img class="logo" src="https://www.shadowrocketdownload.com/img/logo.png" alt="Logo">
@@ -229,8 +246,10 @@ const html = `
         </a>
     </div>
 
+    <!-- 服务模块展示区域 -->
     <div id="container" class="container"></div>
 
+    <!-- 弹出框显示测试结果 -->
     <div id="result-popup">
         <h2 id="popup-title"></h2>
         <p id="popup-message"></p>
@@ -241,8 +260,10 @@ const html = `
     </div>
 
     <script>
+        // 设置基础URL
         const baseUrl = "https://streaming.test";
 
+        // 设置流媒体服务列表
         const streamingServices = [
             { name: 'YouTube', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg', endpoint: 'youtube' },
             { name: 'Netflix', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg', endpoint: 'netflix' },
@@ -260,6 +281,7 @@ const html = `
             { name: 'ニコニコ', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/niconco.png', endpoint: 'nicovideo' }
         ];
 
+        // 获取容器和弹出框元素
         const container = document.getElementById('container');
         const resultPopup = document.getElementById('result-popup');
         const popupTitle = document.getElementById('popup-title');
@@ -267,6 +289,7 @@ const html = `
         const closeBtn = document.getElementById('close-btn');
         const copyBtn = document.getElementById('copy-btn');
 
+        // 创建每个流媒体服务的模块
         function createModule(service) {
             const moduleDiv = document.createElement('div');
             moduleDiv.className = 'module';
@@ -278,41 +301,44 @@ const html = `
             return moduleDiv;
         }
 
+        // 将所有流媒体服务模块添加到页面中
         streamingServices.forEach(service => {
             container.appendChild(createModule(service));
         });
 
+        // 运行测试并显示结果
         async function runTest(name, endpoint) {
             const url = \`\${baseUrl}/\${endpoint}\`;
 
             popupTitle.textContent = \`正在测试 \${name}\`;
             popupMessage.textContent = '请稍候...';
+
             resultPopup.style.display = 'block';
 
             try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) throw new Error('请求失败');
+                const response = await fetch(url);
                 const result = await response.json();
-
-                popupTitle.textContent = \`\${name} 测试结果\`;
-                const resultMessage = result.message || "未知结果";
-
-                popupMessage.innerHTML = resultMessage;
-                console.log(\`\${name} 测试结果：\`, resultMessage);
+                popupMessage.textContent = result.message;
             } catch (error) {
-                popupTitle.textContent = \`\${name} 测试失败\`;
-                popupMessage.textContent = '请检查网络连接或分流规则';
+                popupMessage.textContent = '检测失败，请稍后再试。';
             }
         }
 
+        // 关闭弹出框
         closeBtn.addEventListener('click', () => {
             resultPopup.style.display = 'none';
         });
 
+        // 复制结果
         copyBtn.addEventListener('click', () => {
-            const message = popupMessage.textContent || popupMessage.innerText;
-            navigator.clipboard.writeText(message);
-            resultPopup.style.display = 'none';
+            const text = popupMessage.textContent;
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    alert('复制成功!');
+                })
+                .catch(() => {
+                    alert('复制失败!');
+                });
         });
     </script>
 </body>
@@ -320,9 +346,9 @@ const html = `
 `;
 
 $done({
-    response: {
-        status: 200,
-        headers: { 'Content-Type': 'text/html;charset=UTF-8' },
-        body: html
-    }
+  response: {
+    status: 200,
+    headers: { 'Content-Type': 'text/html;charset=UTF-8' },
+    body: html
+  }
 });
