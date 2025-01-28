@@ -334,18 +334,17 @@ const html = `
         closeBtn.addEventListener('click', () => {
             resultPopup.style.display = 'none';
         });
-
-        // 复制结果
+        // 复制结果并关闭弹窗
         copyBtn.addEventListener('click', () => {
-            const text = popupMessage.textContent;
-            navigator.clipboard.writeText(text)
-                .then(() => {
-                    alert('复制成功!');
-                })
-                .catch(() => {
-                    alert('复制失败!');
-                });
+    const text = popupMessage.textContent;
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            resultPopup.style.display = 'none';  // 复制后关闭弹窗
+        })
+        .catch(() => {
+            alert('复制失败!');
         });
+});
     </script>
 </body>
 </html>
