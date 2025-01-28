@@ -318,7 +318,7 @@ const html = `
             try {
                 const response = await fetch(url);
                 const result = await response.json();
-                popupMessage.textContent = result.message;
+                popupMessage.innerHTML = result.message;
             } catch (error) {
                 popupMessage.textContent = '检测失败，请稍后再试。';
             }
