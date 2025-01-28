@@ -305,11 +305,11 @@ $httpClient.get({
     }
     let isRisky = body.includes('sj_cook.set("SRCHHPGUSR","HV"');
     if (isRisky) {
-        result.message = `Bing Region:${region}${regionFlag}(Risky)`;
-        console.log(`[${timestamp}]⚠️检测到Bing区域为${region}${regionFlag}，状态为有风险(Risky)`)
+        result.message = `Bing Region:${regionFlag} ${region}(Risky)`;
+        console.log(`[${timestamp}]⚠️检测到Bing区域为${regionFlag} ${region}，状态为有风险(Risky)`)
     } else {
         result.message = `Bing Region:${region}${regionFlag}`;
-        console.log(`[${timestamp}]✅检测到Bing区域为${region}${regionFlag}，状态正常`)
+        console.log(`[${timestamp}]✅检测到Bing区域为${regionFlag} ${region}，状态正常`)
     }
     $done({
         response: {
