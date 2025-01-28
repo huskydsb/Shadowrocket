@@ -63,11 +63,20 @@ const html = `
             margin-bottom: 50px;
             padding: 10px;
         }
+        /* For screens smaller than XS */
         @media (max-width: 375px) {
             .container {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(1, 1fr); /* 1 column for small screens */
             }
         }
+
+        /* For iPhone 15 Pro and XS */
+        @media (min-width: 390px) and (max-width: 500px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr); /* Default 2 columns */
+            }
+        }
+
         .module {
             display: flex;
             flex-direction: column;
@@ -287,9 +296,9 @@ const html = `
 `;
 
 $done({
-    response: {
-        status: 200,
-        headers: { 'Content-Type': 'text/html;charset=UTF-8' },
-        body: html
-    }
+  response: {
+    status: 200,
+    headers: { 'Content-Type': 'text/html;charset=UTF-8' },
+    body: html
+  }
 });
