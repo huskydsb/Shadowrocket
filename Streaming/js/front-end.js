@@ -91,7 +91,8 @@ const html = `
             justify-content: center;
             border: 2px solid #ddd;
             border-radius: 12px;
-            background-color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
             padding: 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             cursor: pointer;
@@ -127,15 +128,19 @@ const html = `
             transform: translate(-50%, -50%);
             width: 75%;
             max-width: 600px;
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             padding: 20px;
             display: none;
             z-index: 1000;
             box-sizing: border-box;
             color: #444;
+        }
+        body {
+            background-color: rgba(0, 0, 0, 0.5);
         }
         #result-popup h2 {
             margin: 0 0 15px 0;
@@ -148,6 +153,12 @@ const html = `
             font-size: 16px;
             text-align: center;
             color: #666;
+        }
+        #result-popup {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         #result-popup .buttons {
             display: flex;
@@ -162,30 +173,34 @@ const html = `
             width: 48%;
             transition: background-color 0.3s;
         }
-        #close-btn {
-            background-color: #f44336;
+        #close-btn, #copy-btn {
+            background: linear-gradient(45deg, #ff0077, #5900b3);
+            border: none;
             color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        #close-btn:hover {
-            background-color: #d32f2f;
-        }
-        #copy-btn {
-            background-color: #4caf50;
-            color: white;
-        }
-        #copy-btn:hover {
-            background-color: #388e3c;
+        #close-btn:hover, #copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         @media (prefers-color-scheme: dark) {
             body {
                 background-color: #121212;
             }
             .module {
-                background-color: #333;
-                color: #fff;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 0, 0.2);
+            }
+            .module img {
+                transition: transform 0.3s ease;
+            }
+            .module:hover img {
+                transform: scale(1.1);
             }
             .module:hover {
-                background-color: #444;
+                transform: translateY(-10px);
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
             }
             #result-popup {
                 background-color: #333;
