@@ -312,15 +312,21 @@ const html = `
 
             popupTitle.textContent = \`正在测试 \${name}\`;
             popupMessage.textContent = '请稍候...';
-
             resultPopup.style.display = 'block';
 
             try {
-                const response = await fetch(url);
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) throw new Error('请求失败');
                 const result = await response.json();
-                popupMessage.innerHTML = result.message;
+
+                popupTitle.textContent = \`\${name} 测试结果\`;
+                const resultMessage = result.message || "未知结果";
+
+                popupMessage.innerHTML = resultMessage;
+                console.log(\`\${name} 测试结果：\`, resultMessage);
             } catch (error) {
-                popupMessage.textContent = '检测失败，请稍后再试。';
+                popupTitle.textContent = \`\${name} 测试失败\`;
+                popupMessage.textContent = '请检查网络连接或分流规则';
             }
         }
 
