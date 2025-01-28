@@ -56,27 +56,34 @@ const html = `
         }
         .container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 18px;
             width: 90%;
             max-width: 1000px;
             margin-bottom: 50px;
             padding: 10px;
         }
-        /* For screens smaller than XS */
-        @media (max-width: 375px) {
+        @media (max-width: 480px) {
             .container {
-                grid-template-columns: repeat(1, 1fr); /* 1 column for small screens */
+                grid-template-columns: repeat(2, minmax(120px, 1fr));
+                gap: 15px;
+            }
+            .module {
+                padding: 15px;
+            }
+            .module img {
+                width: 60px;
+                height: 60px;
+            }
+            .module span {
+                font-size: 16px;
             }
         }
-
-        /* For iPhone 15 Pro and XS */
-        @media (min-width: 390px) and (max-width: 500px) {
+        @media (min-width: 481px) and (max-width: 768px) {
             .container {
-                grid-template-columns: repeat(2, 1fr); /* Default 2 columns */
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             }
         }
-
         .module {
             display: flex;
             flex-direction: column;
@@ -90,6 +97,7 @@ const html = `
             cursor: pointer;
             transition: all 0.3s ease-in-out;
             color: #444;
+            aspect-ratio: 1/1;
         }
         .module:hover {
             transform: translateY(-5px);
@@ -105,6 +113,7 @@ const html = `
             font-size: 18px;
             font-weight: 600;
             color: #333;
+            text-align: center;
         }
         @media (prefers-color-scheme: dark) {
             .module span {
@@ -266,7 +275,7 @@ const html = `
             resultPopup.style.display = 'block';
 
             try {
-                const response = await fetch(url, { method: 'GET', timeout: 10000 });
+                const response = await fetch(url, { method: 'GET' });
                 if (!response.ok) throw new Error('请求失败');
                 const result = await response.json();
 
@@ -296,9 +305,9 @@ const html = `
 `;
 
 $done({
-  response: {
-    status: 200,
-    headers: { 'Content-Type': 'text/html;charset=UTF-8' },
-    body: html
-  }
+    response: {
+        status: 200,
+        headers: { 'Content-Type': 'text/html;charset=UTF-8' },
+        body: html
+    }
 });
