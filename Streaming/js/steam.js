@@ -23,10 +23,22 @@ var params = {
 };
 
 const currencyMap = {
-    "JP": ["¥", "JPY"], "US": ["$", "USD"], "GB": ["£", "GBP"],
-    "CN": ["¥", "CNY"], "EU": ["€", "EUR"], "IN": ["₹", "INR"],
-    "CA": ["$", "CAD"], "AU": ["$", "AUD"], "KR": ["₩", "KRW"],
-    "TW": ["NT$", "TWD"], "RU": ["₽", "RUB"], "CH": ["Fr", "CHF"]
+    "JP": ["¥", "JPY"],    "US": ["$", "USD"],  "GB": ["£", "GBP"],
+    "CN": ["¥", "CNY"],    "EU": ["€", "EUR"],  "IN": ["₹", "INR"],
+    "CA": ["$", "CAD"],    "AU": ["$", "AUD"],  "KR": ["₩", "KRW"],
+    "TW": ["NT$", "TWD"],  "RU": ["₽", "RUB"],  "CH": ["Fr", "CHF"],
+    "BR": ["R$", "BRL"],   "ZA": ["R", "ZAR"],  "MX": ["$", "MXN"],
+    "SG": ["$", "SGD"],    "HK": ["$", "HKD"],  "NZ": ["$", "NZD"],
+    "SE": ["kr", "SEK"],   "NO": ["kr", "NOK"], "DK": ["kr", "DKK"],
+    "PL": ["zł", "PLN"],   "TH": ["฿", "THB"],  "MY": ["RM", "MYR"],
+    "ID": ["Rp", "IDR"],   "TR": ["₺", "TRY"],  "SA": ["﷼", "SAR"],
+    "AE": ["د.إ", "AED"],  "IL": ["₪", "ILS"],  "EG": ["£", "EGP"],
+    "NG": ["₦", "NGN"],    "PK": ["₨", "PKR"],  "BD": ["৳", "BDT"],
+    "VN": ["₫", "VND"],    "PH": ["₱", "PHP"],  "AR": ["$", "ARS"],
+    "CL": ["$", "CLP"],    "CO": ["$", "COP"],  "PE": ["S/", "PEN"],
+    "UA": ["₴", "UAH"],    "HU": ["Ft", "HUF"], "CZ": ["Kč", "CZK"],
+    "RO": ["lei", "RON"],  "BG": ["лв", "BGN"], "HR": ["kn", "HRK"],
+    "KE": ["Sh", "KES"],   "TZ": ["Sh", "TZS"], "UG": ["Sh", "UGX"]
 };
 
 function fetchData(params) {
