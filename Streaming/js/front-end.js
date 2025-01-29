@@ -280,7 +280,9 @@ const html = `
             { name: 'Bahamut', logo: 'https://i2.bahamut.com.tw/anime/logo.svg', endpoint: 'bahamut' },
             { name: 'ニコニコ', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/niconco.png', endpoint: 'nicovideo' },
             { name: 'Google Play', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_Play_2022_icon.svg/1856px-Google_Play_2022_icon.svg.png', endpoint: 'googleplay' },
-            { name: 'Wikipedia', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png', endpoint: 'wikipedia' }
+            { name: 'Wikipedia', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png', endpoint: 'wikipedia' },
+            { name: 'Starz', logo: 'https://www.starz.com/assets/images/icons/starz-logo-glint.svg' ,endpoint: 'starz' },
+            { name: 'iQIYI', logo: 'https://www.iqiyipic.com/common/fix/h5-aura/iqiyi-logo.png', endpoint: 'iqiyi' }
         ];
 
         // 获取容器和弹出框元素
