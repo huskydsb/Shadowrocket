@@ -39,6 +39,10 @@ Starz = type=http-request, pattern= ^https:\/\/streaming\.test\/starz\/?$, scrip
 
 iQIYI = type=http-request, pattern= ^https:\/\/streaming\.test\/iqiyi\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/iqiyi.js, timeout=60
 
+DAZN = type=http-request, pattern= ^https:\/\/streaming\.test\/dazn\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/dazn.js, timeout=60
+
+ParamountPlus = type=http-request, pattern= ^https:\/\/streaming\.test\/paramountplus\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/paramountplus.js, timeout=60
+
 Front-end = type=http-request, pattern=^https:\/\/streaming\.test\/$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/front-end.js, timeout=60
 
 [MITM]
