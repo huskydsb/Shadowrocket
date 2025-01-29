@@ -265,9 +265,9 @@ const html = `
 
         // 设置流媒体服务列表
         const streamingServices = [
-            { name: 'YouTube', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg', endpoint: 'youtube' },
-            { name: 'Netflix', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg', endpoint: 'netflix' },
-            { name: 'ChatGPT', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/ChatGPT-Logo.svg/2048px-ChatGPT-Logo.svg.png', endpoint: 'chatgpt' },
+            { name: 'YouTube', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/YouTube_2024.svg/2560px-YouTube_2024.svg.png', endpoint: 'youtube' },
+            { name: 'Netflix', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png', endpoint: 'netflix' },
+            { name: 'ChatGPT', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/OpenAI_Logo.svg/2560px-OpenAI_Logo.svg.png', endpoint: 'chatgpt' },
             { name: 'TikTok', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/TikTok_logo.svg/2560px-TikTok_logo.svg.png', endpoint: 'tiktok' },
             { name: 'Disney+', logo: 'https://upload.wikimedia.org/wikipedia/commons/archive/7/77/20230514165915%21Disney_Plus_logo.svg', endpoint: 'disney' },
             { name: 'Spotify', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Spotify_logo_with_text.svg/2560px-Spotify_logo_with_text.svg.png', endpoint: 'spotify' },
@@ -281,11 +281,11 @@ const html = `
             { name: 'ニコニコ', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/niconco.png', endpoint: 'nicovideo' },
             { name: 'Google Play', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_Play_2022_icon.svg/1856px-Google_Play_2022_icon.svg.png', endpoint: 'googleplay' },
             { name: 'Wikipedia', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png', endpoint: 'wikipedia' },
-            { name: 'Starz', logo: 'https://www.starz.com/assets/images/icons/starz-logo-glint.svg' ,endpoint: 'starz' },
-            { name: 'iQIYI', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Iqiyi_Logo_Baru.png', endpoint: 'iqiyi' },
+            { name: 'Starz', logo: 'https://www.starz.com/assets/images/icons/starz-logo-glint.svg' ,endpoint: 'starz' },
+            { name: 'iQIYI', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Iqiyi_Logo_Baru.png', endpoint: 'iqiyi' },
             { name: 'DAZN', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/DAZN_Logo_Master.svg/2048px-DAZN_Logo_Master.svg.png', endpoint: 'dazn' },
             { name: 'ParamountPlus', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Paramount_Plus.svg/2560px-Paramount_Plus.svg.png', endpoint: 'paramountplus' }
-        ];
+         ];
 
         // 获取容器和弹出框元素
         const container = document.getElementById('container');
