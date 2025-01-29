@@ -35,6 +35,10 @@ Google Play = type=http-request, pattern= ^https:\/\/streaming\.test\/googleplay
 
 Wikipedia = type=http-request, pattern= ^https:\/\/streaming\.test\/wikipedia\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/wikipedia.js, timeout=60
 
+Starz = type=http-request, pattern= ^https:\/\/streaming\.test\/starz\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/starz.js, timeout=60
+
+iQIYI = type=http-request, pattern= ^https:\/\/streaming\.test\/iqiyi\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/iqiyi.js, timeout=60
+
 Front-end = type=http-request, pattern=^https:\/\/streaming\.test\/$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/front-end.js, timeout=60
 
 [MITM]
