@@ -43,6 +43,10 @@ DAZN = type=http-request, pattern= ^https:\/\/streaming\.test\/dazn\/?$, script-
 
 ParamountPlus = type=http-request, pattern= ^https:\/\/streaming\.test\/paramountplus\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/paramountplus.js, timeout=60
 
+IPv6 = type=http-request, pattern= ^https:\/\/streaming\.test\/ip\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/ip.js, timeout=60
+
+Surfsharkdns = type=http-request, pattern= ^https:\/\/streaming\.test\/dns\/?$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/surfsharkdns.js, timeout=60
+
 Front-end = type=http-request, pattern=^https:\/\/streaming\.test\/$, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/js/front-end.js, timeout=60
 
 [MITM]
