@@ -1,5 +1,16 @@
+function getFormattedDate() {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 function handleError(message, error = null) {
-    console.error(`[${new Date().toLocaleString()}] 🛑 错误处理:`, message, error || "");
+    console.error(`[${getFormattedDate()}] 🛑 错误处理:`, message, error || "");
     $notification.post("错误", "操作失败", message);
     $done({ response: { status: 200, body: JSON.stringify({ message }) } });
 }
@@ -20,19 +31,19 @@ var ipApiParams = {
 };
 
 function fetchIpInfo() {
-    console.log(`[${new Date().toLocaleString()}] 📝 开始获取IP信息...`);
+    console.log(`[${getFormattedDate()}] 📝 开始获取IP信息...`);
 
-    $httpClient.get(ipApiParams, function (error, response, data) {
+    $httpClient.get(ipApiParams, function(error, response, data) {
         if (error || !data || data.trim() === "") {
             return handleError("获取IP信息失败，请检查接口或网络状态。", error);
         }
 
-        console.log(`[${new Date().toLocaleString()}] ✅ 成功获取IP信息:`, data);
+        console.log(`[${getFormattedDate()}] ✅ 成功获取IP信息:`, data);
 
         let ipInfo;
         try {
             ipInfo = JSON.parse(data);
-            console.log(`[${new Date().toLocaleString()}] ✅ 解析IP信息成功:`, ipInfo);
+            console.log(`[${getFormattedDate()}] ✅ 解析IP信息成功:`, ipInfo);
         } catch (e) {
             return handleError("解析IP信息JSON时出错:", e);
         }
@@ -45,7 +56,7 @@ function fetchIpInfo() {
             let org = ipInfo.org || "N/A";
             let as = ipInfo.as || "N/A";
 
-            console.log(`[${new Date().toLocaleString()}] 🌍 IP地址: ${ipValue}, 城市: ${city}, 国家: ${country}, ISP: ${isp}, 组织: ${org}, ASN: ${as}`);
+            console.log(`[${getFormattedDate()}] 🌍 IP地址: ${ipValue}, 城市: ${city}, 国家: ${country}, ISP: ${isp}, 组织: ${org}, ASN: ${as}`);
 
             var requestParams = {
                 url: `https://scamalytics.com/search?ip=${ipValue}`,
@@ -53,9 +64,9 @@ function fetchIpInfo() {
                 headers: headers,
             };
 
-            console.log(`[${new Date().toLocaleString()}] 📝 开始请求Scamalytics IP详情...`);
+            console.log(`[${getFormattedDate()}] 📝 开始请求Scamalytics IP详情...`);
 
-            $httpClient.get(requestParams, function (error, response, data) {
+            $httpClient.get(requestParams, function(error, response, data) {
                 if (error) {
                     return handleError("获取Scamalytics IP详情时出错:", error);
                 }
@@ -64,33 +75,29 @@ function fetchIpInfo() {
                     return handleError("Scamalytics返回内容为空，请检查接口是否有效。");
                 }
 
-                console.log(`[${new Date().toLocaleString()}] ✅ 成功获取Scamalytics IP详情:`, data);
+                console.log(`[${getFormattedDate()}] ✅ 成功获取Scamalytics IP详情:`, data);
 
-                let preRegex = /<pre[^>]*>([\s\S]*?)<\/pre>/;
+                let preRegex = /<pre[^>]*>([\s\S]*?)<\/pre>/i;
                 let preMatch = data.match(preRegex);
                 let preContent = preMatch ? preMatch[1] : null;
 
                 let score = "N/A";
                 let risk = "N/A";
                 if (preContent) {
-                    console.log(`[${new Date().toLocaleString()}] 🔍 提取到<pre>标签内容:`, preContent);
+                    console.log(`[${getFormattedDate()}] 🔍 提取到<pre>标签内容:`, preContent);
 
-                    let jsonRegex = /({[\s\S]*?})/;
-                    let jsonMatch = preContent.match(jsonRegex);
+                    const kvRegex = /"?(ip|score|risk)"?\s*:\s*"?(.*?)"?(\s|,|}|$)/gi;
+                    const dataObj = {};
 
-                    if (jsonMatch) {
-                        let jsonData = jsonMatch[1];
-                        console.log(`[${new Date().toLocaleString()}] 🔍 提取到JSON数据:`, jsonData);
-
-                        try {
-                            let parsedData = JSON.parse(jsonData);
-                            score = parsedData.score || "N/A";
-                            risk = parsedData.risk || "N/A";
-                            console.log(`[${new Date().toLocaleString()}] ✅ 解析Scamalytics JSON成功:`, parsedData);
-                        } catch (e) {
-                            console.error(`[${new Date().toLocaleString()}] 🛑 解析Scamalytics JSON时出错:`, e);
-                        }
+                    let match;
+                    while ((match = kvRegex.exec(preContent)) !== null) {
+                        const key = match[1].toLowerCase().trim();
+                        const value = match[2].trim();
+                        if (key && value) dataObj[key] = value;
                     }
+
+                    score = dataObj.score || "N/A";
+                    risk = dataObj.risk || "N/A";
                 }
 
                 var riskemoji, riskDescription;
@@ -117,14 +124,13 @@ function fetchIpInfo() {
                         break;
                 }
 
-                console.log(`[${new Date().toLocaleString()}] 🔍 风险等级: ${riskemoji} ${riskDescription}, 欺诈分数: ${score}`);
+                console.log(`[${getFormattedDate()}] 🔍 风险等级: ${riskemoji} ${riskDescription}, 欺诈分数: ${score}`);
 
                 let scamInfo = {
                     message: `IP欺诈评分查询结果：<br>IP地址: ${ipValue}<br>IP城市: ${city}<br>IP国家: ${country}<br>IP欺诈分数: ${score}<br>IP风险等级: ${riskemoji} ${riskDescription}<br>ISP: ${isp}<br>组织: ${org}<br>ASN: ${as}`
                 };
 
-                console.log(`[${new Date().toLocaleString()}] ✅ 最终结果:`);
-                console.log(`
+                console.log(`[${getFormattedDate()}] ✅ 最终结果:
                     IP欺诈评分查询结果：
                     IP地址: ${ipValue}
                     IP城市: ${city}
