@@ -285,7 +285,11 @@ const html = `
             { name: 'iQIYI', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Iqiyi_Logo_Baru.png', endpoint: 'iqiyi' },
             { name: 'DAZN', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/DAZN_Logo_Master.svg/2048px-DAZN_Logo_Master.svg.png', endpoint: 'dazn' },
             { name: 'ParamountPlus', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Paramount_Plus.svg/2560px-Paramount_Plus.svg.png', endpoint: 'paramountplus' },
-            { name: 'IPv6', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/ip.png', endpoint: 'ip' },
+            { name: 'ViuTV', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/ViuTV_logo.svg/2560px-ViuTV_logo.svg.png', endpoint: 'viutv' },
+            { name: 'Now E', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/NowE_logo_rgb.svg/2560px-NowE_logo_rgb.svg.png', endpoint: 'nowe' },
+            { name: 'KKTV', logo: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/KKTV.png', endpoint: 'kktv' },              
+            { name: 'LINE TV', logo: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/LineTV.png', endpoint: 'linetv' },
+            { name: 'IPv6', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/ip.png', endpoint: 'ip' },
             { name: 'DNS', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/dns.png', endpoint: 'dns' }
          ];
 
