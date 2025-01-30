@@ -284,7 +284,9 @@ const html = `
             { name: 'Starz', logo: 'https://www.starz.com/assets/images/icons/starz-logo-glint.svg' ,endpoint: 'starz' },
             { name: 'iQIYI', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Iqiyi_Logo_Baru.png', endpoint: 'iqiyi' },
             { name: 'DAZN', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/DAZN_Logo_Master.svg/2048px-DAZN_Logo_Master.svg.png', endpoint: 'dazn' },
-            { name: 'ParamountPlus', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Paramount_Plus.svg/2560px-Paramount_Plus.svg.png', endpoint: 'paramountplus' }
+            { name: 'ParamountPlus', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Paramount_Plus.svg/2560px-Paramount_Plus.svg.png', endpoint: 'paramountplus' },
+            { name: 'IPv6', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/ip.png', endpoint: 'ip' },
+            { name: 'DNS', logo: 'https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Streaming/icon/dns.png', endpoint: 'dns' }
          ];
 
         // 获取容器和弹出框元素
