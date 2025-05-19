@@ -2,7 +2,7 @@
 // 参数名：机场订阅链接（多个用 & 分隔）
 
 const args = Object.fromEntries(($argument || "").split("&").map(kv => kv.split("=")));
-const subListRaw = args["机场订阅链接"] || "";
+const subListRaw = args["机场订阅链接地址"] || "";
 
 if (!subListRaw) {
   $notification.post("❗机场流量通知", "", "未提供订阅链接参数");
