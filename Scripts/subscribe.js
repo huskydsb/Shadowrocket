@@ -5,8 +5,12 @@ const $utils = (() => {
   const isSurge = typeof $httpClient !== "undefined";
   const isQuanX = typeof $task !== "undefined";
   const notify = (title, subtitle, message) => {
-    if (isSurge) $notification.post(title, subtitle, message);
-    if (isQuanX) $notify(title, subtitle, message);
+    try {
+      if (isSurge) $notification.post(title, subtitle, message);
+      if (isQuanX) $notify(title, subtitle, message);
+    } catch (e) {
+      console.log(`通知发送失败: ${e}`);
+    }
   };
   const get = (url, cb) => {
     const headers = {
@@ -19,55 +23,94 @@ const $utils = (() => {
       'Host': new URL(url).hostname
     };
     const params = { url, headers, timeout: 5000 };
-    if (isSurge) $httpClient.get(params, cb);
-    if (isQuanX) $task.fetch(params).then(resp => cb(null, resp, resp.body));
+    try {
+      if (isSurge) $httpClient.get(params, cb);
+      if (isQuanX) $task.fetch(params).then(resp => cb(null, resp, resp.body), err => cb(err, null, null));
+    } catch (e) {
+      cb(`请求初始化失败: ${e}`, null, null);
+    }
   };
-  const done = () => $done();
+  const done = () => {
+    try {
+      $done();
+    } catch (e) {
+      console.log(`脚本结束失败: ${e}`);
+    }
+  };
   return { notify, get, done };
 })();
 
-const args = Object.fromEntries(($argument || "").split("&").map(kv => kv.split("=")));
+console.log("脚本开始运行");
+
+const args = Object.fromEntries(($argument || "").split("&").map(kv => {
+  const [key, value] = kv.split("=");
+  return [key, value || ""];
+}));
 const subListRaw = args["机场订阅链接"] || "";
 const notifyEnable = true;
+
+console.log(`输入参数: ${subListRaw}`);
 
 if (!subListRaw) {
   $utils.notify("❗️未填写机场订阅链接", "", "请检查模块参数");
   $utils.done();
+  return;
 }
 
-const subList = decodeURIComponent(subListRaw).split("&").filter(i => /^https?:\/\/\S+/.test(i));
+let subList;
+try {
+  subList = decodeURIComponent(subListRaw).split("&").filter(i => /^https?:\/\/\S+/.test(i));
+} catch (e) {
+  console.log(`链接解析失败: ${e}`);
+  $utils.notify("⚠️ 链接解析失败", "", `错误: ${e}`);
+  $utils.done();
+  return;
+}
+
 if (subList.length === 0) {
+  console.log("无有效链接");
   $utils.notify("⚠️ 无有效链接", "", "请检查机场订阅链接是否正确");
   $utils.done();
+  return;
 }
+
+console.log(`有效链接: ${subList.join(", ")}`);
 
 let resultList = [];
 let finished = 0;
 
 subList.forEach((url, index) => {
+  console.log(`请求链接${index + 1}: ${url}`);
   $utils.get(url, (err, resp, body) => {
     finished++;
     let title = `🔗 链接${index + 1}（${getHostname(url)}）`;
     let msg = "";
 
     if (err) {
-      msg = `❌ 请求错误：${err}`;
+      console.log(`链接${index + 1} 请求错误: ${err}`);
+      msg = `❌ 请求错误: ${err}`;
     } else if (!body) {
+      console.log(`链接${index + 1} 响应为空`);
       msg = `⚠️ 响应为空，请确认链接有效`;
     } else {
+      console.log(`链接${index + 1} 原始响应: ${body}`);
       try {
         // 对整个 body 进行 Base64 解码
         const decodedBody = atob(body.trim());
+        console.log(`链接${index + 1} 解码后: ${decodedBody}`);
         // 提取 STATUS= 开头的一行（忽略 ss:// 等内容）
         const statusLine = decodedBody.split('\n').find(line => line.startsWith("STATUS="));
         if (!statusLine) {
+          console.log(`链接${index + 1} 无 STATUS= 行`);
           msg = `⚠️ 解码后响应不包含 STATUS=，请确认机场支持`;
         } else {
           // 解析 STATUS= 后的内容
           const statusContent = statusLine.replace("STATUS=", "").trim();
+          console.log(`链接${index + 1} STATUS 内容: ${statusContent}`);
           const parsed = parseStatus(statusContent);
           if (parsed.error) {
-            msg = `❗解析失败：${parsed.error}`;
+            console.log(`链接${index + 1} 解析失败: ${parsed.error}`);
+            msg = `❗解析失败: ${parsed.error}`;
           } else {
             msg = [
               `📤 上行: ${parsed.upload}`,
@@ -78,7 +121,8 @@ subList.forEach((url, index) => {
           }
         }
       } catch (e) {
-        msg = `❗解码失败：${e}`;
+        console.log(`链接${index + 1} 解码失败: ${e}`);
+        msg = `❗解码失败: ${e}`;
       }
     }
 
@@ -96,6 +140,7 @@ subList.forEach((url, index) => {
           second: "2-digit",
           hour12: false
         }).replace(/\//g, "-");
+        console.log(`发送通知: ${fullMsg}`);
         $utils.notify("📡 机场流量通知", time, fullMsg);
       }
       $utils.done();
@@ -123,7 +168,7 @@ function parseStatus(status) {
 
     return result;
   } catch (e) {
-    return { error: `无法解析流量信息：${e}` };
+    return { error: `无法解析流量信息: ${e}` };
   }
 }
 
