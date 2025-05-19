@@ -1,3 +1,5 @@
+// Shadowrocket 参数传入脚本，适配 STATUS 格式解析
+
 const $ = $httpClient ? {
   get: $httpClient.get,
   notify: $notification.post,
@@ -8,60 +10,59 @@ const $ = $httpClient ? {
   done: () => $done()
 };
 
-const args = Object.fromEntries(($argument || "").split("&").map(i => i.split("=")));
-const urlList = decodeURIComponent(args["机场订阅链接"] || "").split("&").filter(Boolean);
+// 提取参数
+const argStr = typeof $argument === 'string' ? $argument : '';
+const args = Object.fromEntries(argStr.split("&").map(kv => kv.split("=")));
+const subRaw = args["机场订阅链接地址"] || args["sub"] || "";
 
-if (urlList.length === 0) {
-  $.notify("📡 机场流量通知", "", "❗未设置订阅链接");
+if (!subRaw) {
+  $.notify("📡 机场流量通知", "", "❗未提供订阅链接参数");
   $.done();
 }
 
+const urls = decodeURIComponent(subRaw).split("&").map(u => u.trim()).filter(Boolean);
 let finished = 0;
-let output = [];
+let results = [];
 
-urlList.forEach((url, index) => {
-  const params = {
-    url: url.trim(),
+urls.forEach((url, i) => {
+  const options = {
+    url,
+    timeout: 8000,
     headers: {
-      "User-Agent": "Shadowrocket"
-    },
-    timeout: 8000
+      "User-Agent": "Shadowrocket/2615 CFNetwork/1406 Darwin/22.4.0"
+    }
   };
 
-  $.get(params, (error, resp, body) => {
+  $.get(options, (err, resp, body) => {
     finished++;
+    const tag = `链接${i + 1}`;
 
-    if (error || !body) {
-      output.push(`🚫 链接${index + 1} 请求失败`);
+    if (err || !body) {
+      results.push(`🚫 ${tag} 请求失败`);
     } else {
       try {
         const decoded = decodeURIComponent(body);
-
         if (!decoded.includes("STATUS=")) {
-          output.push(`❌ 链接${index + 1} 无有效 STATUS`);
+          results.push(`❌ ${tag} 无有效状态信息`);
         } else {
-          // 匹配 STATUS=↑:0.94GB,↓:114.99GB,TOT:200GB,Expires:2025-06-06
-          const statusMatch = decoded.match(/STATUS=↑:(.*?),↓:(.*?),TOT:(.*?)(Expires:(.*))?/);
-          if (statusMatch) {
-            const upload = statusMatch[1];
-            const download = statusMatch[2];
-            const total = statusMatch[3];
-            const expire = statusMatch[5] || "未知";
-
-            output.push(
-              `🔗 链接${index + 1}：\n📤↑：${upload} | 📥↓：${download}\n📦 总量：${total}\n⏳ 到期：${expire}`
-            );
+          const match = decoded.match(/STATUS=↑:(.*?),↓:(.*?),TOT:(.*?)(?:Expires:([\d\-]+))?/);
+          if (match) {
+            const up = match[1];
+            const down = match[2];
+            const total = match[3];
+            const expire = match[4] || "未知";
+            results.push(`🔗 ${tag}\n📤↑：${up} | 📥↓：${down}\n📦 总量：${total}\n⏳ 到期：${expire}`);
           } else {
-            output.push(`⚠️ 链接${index + 1} 状态解析失败`);
+            results.push(`⚠️ ${tag} 状态解析失败`);
           }
         }
       } catch (e) {
-        output.push(`❌ 链接${index + 1} 解码失败`);
+        results.push(`💥 ${tag} 解码异常`);
       }
     }
 
-    if (finished === urlList.length) {
-      $.notify("📡 机场流量通知", "", output.join("\n\n"));
+    if (finished === urls.length) {
+      $.notify("📡 机场流量通知", "", results.join("\n\n"));
       $.done();
     }
   });
