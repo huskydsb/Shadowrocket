@@ -154,4 +154,39 @@ subList.forEach((url, index) => {
       }).replace(/\//g, "-");
       console.log(`发送通知: ${fullMsg}`);
       $utils.notify("📡 机场流量通知", time, fullMsg);
-      $utils.done
+      $utils.done();
+    }
+  });
+});
+
+function parseStatus(status) {
+  try {
+    // 按逗号分割并提取键值对
+    const parts = status.split(",").map(part => part.trim());
+    const result = {};
+
+    parts.forEach(part => {
+      if (part.startsWith("↑:")) result.upload = part.replace("↑:", "");
+      else if (part.startsWith("↓:")) result.download = part.replace("↓:", "");
+      else if (part.startsWith("TOT:")) result.total = part.replace("TOT:", "");
+      else if (part.startsWith("Expires:")) result.expires = part.replace("Expires:", "");
+    });
+
+    // 验证是否包含所有必需字段
+    if (!result.upload || !result.download || !result.total || !result.expires) {
+      return { error: "缺少部分流量信息字段" };
+    }
+
+    return result;
+  } catch (e) {
+    return { error: `无法解析流量信息: ${e}` };
+  }
+}
+
+function getHostname(url) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "未知地址";
+  }
+}
