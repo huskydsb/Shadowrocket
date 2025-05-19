@@ -1,69 +1,89 @@
-// Shadowrocket 参数传入脚本，适配 STATUS 格式解析
+// Shadowrocket 机场流量通知脚本
+// 参数来自模块：机场订阅链接地址
 
-const $ = $httpClient ? {
-  get: $httpClient.get,
-  notify: $notification.post,
-  done: $done
-} : {
-  get: (params, cb) => $task.fetch(params).then(resp => cb(null, resp, resp.body)),
-  notify: (title, subtitle, message) => $notify(title, subtitle, message),
-  done: () => $done()
-};
-
-// 提取参数
 const argStr = typeof $argument === 'string' ? $argument : '';
 const args = Object.fromEntries(argStr.split("&").map(kv => kv.split("=")));
-const subRaw = args["机场订阅链接地址"] || args["sub"] || "";
 
-if (!subRaw) {
-  $.notify("📡 机场流量通知", "", "❗未提供订阅链接参数");
-  $.done();
+const raw = args["机场订阅链接地址"];
+if (!raw) {
+    $notification.post("❗机场流量通知", "", "未提供订阅链接参数");
+    $done();
+    return;
 }
 
-const urls = decodeURIComponent(subRaw).split("&").map(u => u.trim()).filter(Boolean);
-let finished = 0;
+const urls = decodeURIComponent(raw).split("&");
 let results = [];
+let completed = 0;
 
-urls.forEach((url, i) => {
-  const options = {
-    url,
-    timeout: 8000,
-    headers: {
-      "User-Agent": "Shadowrocket/2615 CFNetwork/1406 Darwin/22.4.0"
-    }
-  };
+for (let url of urls) {
+    querySubInfo(url.trim());
+}
 
-  $.get(options, (err, resp, body) => {
-    finished++;
-    const tag = `链接${i + 1}`;
+function querySubInfo(url) {
+    const headers = {
+        'user-agent': 'Shadowrocket',
+        'accept-encoding': 'gzip, deflate, br',
+    };
 
-    if (err || !body) {
-      results.push(`🚫 ${tag} 请求失败`);
-    } else {
-      try {
-        const decoded = decodeURIComponent(body);
-        if (!decoded.includes("STATUS=")) {
-          results.push(`❌ ${tag} 无有效状态信息`);
+    const request = {
+        url,
+        headers,
+        timeout: 5000,
+        alpn: 'h2',
+    };
+
+    $httpClient.get(request, function (err, resp, body) {
+        let title = `📡 ${getHostname(url)}`;
+        let msg = '';
+
+        if (err) {
+            msg = `请求失败：${err}`;
+        } else if (resp.status !== 200) {
+            msg = `请求失败，状态码：${resp.status}`;
         } else {
-          const match = decoded.match(/STATUS=↑:(.*?),↓:(.*?),TOT:(.*?)(?:Expires:([\d\-]+))?/);
-          if (match) {
-            const up = match[1];
-            const down = match[2];
-            const total = match[3];
-            const expire = match[4] || "未知";
-            results.push(`🔗 ${tag}\n📤↑：${up} | 📥↓：${down}\n📦 总量：${total}\n⏳ 到期：${expire}`);
-          } else {
-            results.push(`⚠️ ${tag} 状态解析失败`);
-          }
+            try {
+                if (body.startsWith("STATUS=")) {
+                    // 解码 base64 可能未启用 userinfo 格式
+                    body = body.replace("STATUS=", "").trim();
+                    msg = body;
+                } else if (body.includes("upload") && body.includes("download")) {
+                    const json = JSON.parse(body);
+                    const info = json.data || {};
+                    msg = `↑${formatBytes(info.usage?.upload)} ↓${formatBytes(info.usage?.download)} / 总:${formatBytes(info.total)}`;
+                    if (info.expire) {
+                        msg += `\n⏰到期时间: ${info.expire}`;
+                    }
+                } else {
+                    msg = "❗未包含 userinfo 或格式异常";
+                }
+            } catch (e) {
+                msg = `解析失败：${e}`;
+            }
         }
-      } catch (e) {
-        results.push(`💥 ${tag} 解码异常`);
-      }
-    }
 
-    if (finished === urls.length) {
-      $.notify("📡 机场流量通知", "", results.join("\n\n"));
-      $.done();
+        results.push(`${title}\n${msg}`);
+        completed++;
+        if (completed === urls.length) notifyDone();
+    });
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0 || !bytes) return "0B";
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    return (bytes / Math.pow(1024, i)).toFixed(2) + sizes[i];
+}
+
+function getHostname(url) {
+    try {
+        return new URL(url).hostname;
+    } catch {
+        return "未知地址";
     }
-  });
-});
+}
+
+function notifyDone() {
+    const time = new Date().toLocaleString("zh-CN", { hour12: false });
+    $notification.post("📢 机场流量使用情况", `${time}`, results.join("\n\n"));
+    $done();
+}
