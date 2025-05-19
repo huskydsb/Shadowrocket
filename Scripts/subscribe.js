@@ -24,14 +24,27 @@ const $utils = (() => {
 
 console.log("脚本开始运行");
 
-// 解析参数
-const args = Object.fromEntries(($argument || "").split("&").map(kv => {
-  const [key, value] = kv.split("=");
-  return [key, value || ""];
-}));
-const subListRaw = args["机场订阅链接"] || "";
+// 获取原始参数
+const rawArgument = $argument || "";
+console.log(`原始参数: ${rawArgument}`);
 
-console.log(`输入参数: ${subListRaw}`);
+// 解析参数
+let subListRaw = "";
+try {
+  // 手动解析 argument，避免截断
+  const argPairs = rawArgument.split("&");
+  for (const pair of argPairs) {
+    if (pair.startsWith("机场订阅链接=")) {
+      subListRaw = pair.replace("机场订阅链接=", "");
+      break;
+    }
+  }
+  console.log(`提取的机场订阅链接: ${subListRaw}`);
+} catch (e) {
+  console.log(`参数解析失败: ${e}`);
+  $utils.notify("❗️参数解析失败", "", `错误: ${e}`);
+  $utils.done();
+}
 
 // 检查参数是否为空
 if (!subListRaw) {
@@ -43,7 +56,11 @@ if (!subListRaw) {
 // 解析订阅链接
 let subList;
 try {
-  subList = decodeURIComponent(subListRaw).split("&").filter(i => /^https?:\/\/\S+/.test(i));
+  // 解码并按 & 分割，确保保留完整链接
+  const decodedList = decodeURIComponent(subListRaw).split("&");
+  // 使用更宽松的正则，仅验证基本 URL 格式
+  subList = decodedList.filter(i => /^https?:\/\/.+$/.test(i));
+  console.log(`解析后的链接: ${subList.join(", ")}`);
 } catch (e) {
   console.log(`链接解析失败: ${e}`);
   $utils.notify("⚠️ 链接解析失败", "", `错误: ${e}`);
