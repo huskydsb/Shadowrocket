@@ -9,7 +9,7 @@ const $ = $httpClient ? {
 };
 
 const args = Object.fromEntries(($argument || "").split("&").map(i => i.split("=")));
-const urlList = decodeURIComponent(args["机场订阅链接"] || "").split("&").filter(Boolean);
+const urlList = decodeURIComponent(args["机场订阅链接地址"] || "").split("&").filter(Boolean);
 
 if (urlList.length === 0) {
   $.notify("📡 机场流量通知", "", "❗未设置订阅链接");
