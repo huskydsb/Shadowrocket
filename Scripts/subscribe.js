@@ -67,9 +67,7 @@ subList.forEach((url, index) => {
           const statusContent = statusLine.replace("STATUS=", "").trim();
           const parsed = parseStatus(statusContent);
           if (parsed.error) {
-            msg = `
-
-❗解析失败：${parsed.error}`;
+            msg = `❗解析失败：${parsed.error}`;
           } else {
             msg = [
               `📤 上行: ${parsed.upload}`,
@@ -88,7 +86,16 @@ subList.forEach((url, index) => {
     if (finished === subList.length) {
       const fullMsg = resultList.join("\n\n");
       if (notifyEnable) {
-        const time = new Date().toLocaleString("zh-CN", { hour12: false });
+        // 使用当前时间，格式为 YYYY-MM-DD HH:MM:SS
+        const time = new Date().toLocaleString("zh-CN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        }).replace(/\//g, "-");
         $utils.notify("📡 机场流量通知", time, fullMsg);
       }
       $utils.done();
@@ -97,30 +104,6 @@ subList.forEach((url, index) => {
 });
 
 function parseStatus(status) {
-  try {
-    // 按逗号分割并提取键值对
-    const parts = status.split(",").map(part => part.trim());
-    const result = {};
-
-    parts.forEach(part => {
-      if (part.startsWith("↑:")) result.upload = part.replace("↑:", "");
-      else if (part.startsWith("↓:")) result.download = part.replace("↓:", "");
-      else if (part.startsWith("TOT:")) result.total = part.replace("TOT:", "");
-      else if (part.startsWith("Expires:")) result.expires = part.replace("Expires:", "");
-    });
-
-    // 验证是否包含所有必需字段
-    if (!result.upload || !result.download || !result.total || !result.expires) {
-      return { error: "缺少部分流量信息字段" };
-    }
-
-    return result;
-  } catch (e) {
-    return { error: `无法解析流量信息：${e}` };
-  }
-}
-
-function Voices(status) {
   try {
     // 按逗号分割并提取键值对
     const parts = status.split(",").map(part => part.trim());
