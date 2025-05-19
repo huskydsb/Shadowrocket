@@ -1,13 +1,9 @@
 #!name=机场流量通知
 #!desc=定时查询机场订阅链接的流量使用情况和到期时间
-#!arguments=启用脚本:true
+#!arguments=启用定时任务脚本:true, 流量定时查询时间:0 0 0 0 0,机场订阅链接地址:地址1&地址2
 
 
 
 [Script]
-#通知
 
-🌅XiaoMao_每日新闻60s = type=cron,script-path=https://raw.githubusercontent.com/xiaomaoJT/QxScript/main/rewrite/boxJS/XiaoMaoNews.js,cronexpr="0 0 10 * * ?",timeout=120,script-update-interval=0,argument=1&2,enable={{{启用脚本}}}
-
-
-#机场流量通知 = type=cron,script-path=https://raw.githubusercontent.com/你的用户名/你的仓库/main/sub-info.js,cronexpr={{{ 0 0 8 * * ? }}},timeout=60,script-update-interval=0,argument=subUrl={{{机场订阅链接}}}&notify={{{推送通知}}},enable={{{启用脚本}}}
+机场流量通知 = type=cron,script-path=https://raw.githubusercontent.com/你的用户名/你的仓库/main/sub-info.js,cronexpr={{{流量定时查询时间}}},timeout=60,script-update-interval=0,argument=机场订阅链接={{{机场订阅链接地址}}},enable={{{启用定时任务脚本}}}
