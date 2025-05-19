@@ -52,9 +52,9 @@ const notifyEnable = true;
 console.log(`输入参数: ${subListRaw}`);
 
 if (!subListRaw) {
+  console.log("未填写机场订阅链接");
   $utils.notify("❗️未填写机场订阅链接", "", "请检查模块参数");
   $utils.done();
-  return;
 }
 
 let subList;
@@ -64,14 +64,12 @@ try {
   console.log(`链接解析失败: ${e}`);
   $utils.notify("⚠️ 链接解析失败", "", `错误: ${e}`);
   $utils.done();
-  return;
 }
 
 if (subList.length === 0) {
   console.log("无有效链接");
   $utils.notify("⚠️ 无有效链接", "", "请检查机场订阅链接是否正确");
   $utils.done();
-  return;
 }
 
 console.log(`有效链接: ${subList.join(", ")}`);
@@ -88,7 +86,7 @@ subList.forEach((url, index) => {
 
     if (err) {
       console.log(`链接${index + 1} 请求错误: ${err}`);
-      msg = `❌ 请求错误: ${err}`;
+      msg = `❌ 请求 错误: ${err}`;
     } else if (!body) {
       console.log(`链接${index + 1} 响应为空`);
       msg = `⚠️ 响应为空，请确认链接有效`;
