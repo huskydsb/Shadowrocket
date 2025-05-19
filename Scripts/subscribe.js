@@ -1,75 +1,68 @@
-// Shadowrocket/Surge/QuanX 通用 - STATUS=Base64 格式机场流量通知脚本
-// 参数名：机场订阅链接（多个用 & 分隔）
+const $ = $httpClient ? {
+  get: $httpClient.get,
+  notify: $notification.post,
+  done: $done
+} : {
+  get: (params, cb) => $task.fetch(params).then(resp => cb(null, resp, resp.body)),
+  notify: (title, subtitle, message) => $notify(title, subtitle, message),
+  done: () => $done()
+};
 
-const $ = (() => {
-  const isSurge = typeof $httpClient !== "undefined";
-  const isQuanX = typeof $task !== "undefined";
-  const notify = (title, subtitle, message) => {
-    if (isSurge) $notification.post(title, subtitle, message);
-    if (isQuanX) $notify(title, subtitle, message);
-  };
-  const get = (url, cb) => {
-    if (isSurge) $httpClient.get(url, cb);
-    if (isQuanX) $task.fetch({ url }).then(resp => cb(null, resp, resp.body));
-  };
-  const done = () => $done();
-  return { notify, get, done };
-})();
+const args = Object.fromEntries(($argument || "").split("&").map(i => i.split("=")));
+const urlList = decodeURIComponent(args["机场订阅链接"] || "").split("&").filter(Boolean);
 
-const args = Object.fromEntries(($argument || "").split("&").map(kv => kv.split("=")));
-const subListRaw = args["机场订阅链接地址"] || "";
-const notifyEnable = true; // 可通过参数开关控制通知（后续可加）
-
-if (!subListRaw) {
-  $.notify("❗️未填写机场订阅链接", "", "请检查模块参数");
+if (urlList.length === 0) {
+  $.notify("📡 机场流量通知", "", "❗未设置订阅链接");
   $.done();
 }
 
-const subList = decodeURIComponent(subListRaw).split("&").filter(i => /^https?:\/\/\S+/.test(i));
-if (subList.length === 0) {
-  $.notify("⚠️ 无有效链接", "", "请检查机场订阅链接是否正确");
-  $.done();
-}
-
-let resultList = [];
 let finished = 0;
+let output = [];
 
-subList.forEach((url, index) => {
-  $.get(url, (err, resp, body) => {
+urlList.forEach((url, index) => {
+  const params = {
+    url: url.trim(),
+    headers: {
+      "User-Agent": "Shadowrocket"
+    },
+    timeout: 8000
+  };
+
+  $.get(params, (error, resp, body) => {
     finished++;
-    let title = `🔗 链接${index + 1}（${getHostname(url)}）`;
-    let msg = "";
 
-    if (err) {
-      msg = `❌ 请求错误：${err}`;
-    } else if (!body || !body.startsWith("STATUS=")) {
-      msg = `⚠️ 响应不包含 STATUS=，请确认机场支持`;
+    if (error || !body) {
+      output.push(`🚫 链接${index + 1} 请求失败`);
     } else {
       try {
-        const b64 = body.replace("STATUS=", "").trim();
-        const decoded = decodeURIComponent(escape(atob(b64)));
-        msg = decoded;
+        const decoded = decodeURIComponent(body);
+
+        if (!decoded.includes("STATUS=")) {
+          output.push(`❌ 链接${index + 1} 无有效 STATUS`);
+        } else {
+          // 匹配 STATUS=↑:0.94GB,↓:114.99GB,TOT:200GB,Expires:2025-06-06
+          const statusMatch = decoded.match(/STATUS=↑:(.*?),↓:(.*?),TOT:(.*?)(Expires:(.*))?/);
+          if (statusMatch) {
+            const upload = statusMatch[1];
+            const download = statusMatch[2];
+            const total = statusMatch[3];
+            const expire = statusMatch[5] || "未知";
+
+            output.push(
+              `🔗 链接${index + 1}：\n📤↑：${upload} | 📥↓：${download}\n📦 总量：${total}\n⏳ 到期：${expire}`
+            );
+          } else {
+            output.push(`⚠️ 链接${index + 1} 状态解析失败`);
+          }
+        }
       } catch (e) {
-        msg = `❗解码失败：${e}`;
+        output.push(`❌ 链接${index + 1} 解码失败`);
       }
     }
 
-    resultList.push(`${title}\n${msg}`);
-    if (finished === subList.length) {
-      const fullMsg = resultList.join("\n\n");
-      if (notifyEnable) {
-        const time = new Date().toLocaleString("zh-CN", { hour12: false });
-        $.notify("📡 机场流量通知", time, fullMsg);
-      }
+    if (finished === urlList.length) {
+      $.notify("📡 机场流量通知", "", output.join("\n\n"));
       $.done();
     }
   });
 });
-
-function getHostname(url) {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "未知地址";
-  }
-}
