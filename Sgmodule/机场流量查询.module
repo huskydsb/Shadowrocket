@@ -6,4 +6,4 @@
 
 [Script]
 
-机场流量通知 = type=cron,script-path=https://raw.githubusercontent.com/你的用户名/你的仓库/main/sub-info.js,cronexpr={{{流量定时查询时间}}},timeout=60,script-update-interval=0,argument=机场订阅链接={{{机场订阅链接地址}}},enable={{{启用定时任务脚本}}}
+机场流量通知 = type=cron,script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Scripts/subscribe.js,cronexpr={{{流量定时查询时间}}},timeout=60,script-update-interval=0,argument=机场订阅链接={{{机场订阅链接地址}}},enable={{{启用定时任务脚本}}}
