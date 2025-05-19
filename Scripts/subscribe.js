@@ -1,4 +1,4 @@
-// Shadowrocket/Surge/QuanX 通用 - STATUS=Base64 格式机场流量通知脚本
+// Shadowrocket/Surge/QuanX 通用 - 显示机场订阅链接参数
 // 参数名：机场订阅链接（多个用 & 分隔）
 
 const $utils = (() => {
@@ -12,24 +12,6 @@ const $utils = (() => {
       console.log(`通知发送失败: ${e}`);
     }
   };
-  const get = (url, cb) => {
-    const headers = {
-      'accept-encoding': 'gzip, deflate, br',
-      'user-agent': 'Shadowrocket/2615 CFNetwork/3826.500.131 Darwin/24.5.0 iPhone14,3',
-      'accept': '*/*',
-      'cache-control': 'no-cache',
-      'accept-language': 'zh-CN,zh-Hans;q=0.9',
-      'Connection': 'keep-alive',
-      'Host': new URL(url).hostname
-    };
-    const params = { url, headers, timeout: 5000 };
-    try {
-      if (isSurge) $httpClient.get(params, cb);
-      if (isQuanX) $task.fetch(params).then(resp => cb(null, resp, resp.body), err => cb(err, null, null));
-    } catch (e) {
-      cb(`请求初始化失败: ${e}`, null, null);
-    }
-  };
   const done = () => {
     try {
       $done();
@@ -37,26 +19,28 @@ const $utils = (() => {
       console.log(`脚本结束失败: ${e}`);
     }
   };
-  return { notify, get, done };
+  return { notify, done };
 })();
 
 console.log("脚本开始运行");
 
+// 解析参数
 const args = Object.fromEntries(($argument || "").split("&").map(kv => {
   const [key, value] = kv.split("=");
   return [key, value || ""];
 }));
 const subListRaw = args["机场订阅链接"] || "";
-const notifyEnable = true;
 
 console.log(`输入参数: ${subListRaw}`);
 
+// 检查参数是否为空
 if (!subListRaw) {
   console.log("未填写机场订阅链接");
   $utils.notify("❗️未填写机场订阅链接", "", "请检查模块参数");
   $utils.done();
 }
 
+// 解析订阅链接
 let subList;
 try {
   subList = decodeURIComponent(subListRaw).split("&").filter(i => /^https?:\/\/\S+/.test(i));
@@ -66,56 +50,26 @@ try {
   $utils.done();
 }
 
+// 检查是否有有效链接
 if (subList.length === 0) {
   console.log("无有效链接");
   $utils.notify("⚠️ 无有效链接", "", "请检查机场订阅链接是否正确");
   $utils.done();
 }
 
-console.log(`有效链接: ${subList.join(", ")}`);
+// 生成通知内容
+const notifyMsg = subList.map((url, index) => `链接${index + 1}: ${url}`).join("\n");
+console.log(`通知内容: ${notifyMsg}`);
 
-let resultList = [];
-let finished = 0;
-
-subList.forEach((url, index) => {
-  console.log(`请求链接${index + 1}: ${url}`);
-  $utils.get(url, (err, resp, body) => {
-    finished++;
-    let title = `🔗 链接${index + 1}（${getHostname(url)}）`;
-    let msg = "";
-
-    if (err) {
-      console.log(`链接${index + 1} 请求错误: ${err}`);
-      msg = `❌ 请求错误: ${err}`;
-    } else if (!body) {
-      console.log(`链接${index + 1} 响应为空`);
-      msg = `⚠️ 响应为空，请确认链接有效`;
-    } else {
-      console.log(`链接${index + 1} 原始响应: ${body}`);
-      try {
-        // 对整个 body 进行 Base64 解码
-        const decodedBody = atob(body.trim());
-        console.log(`链接${index + 1} 解码后: ${decodedBody}`);
-        // 提取 STATUS= 开头的一行（忽略 ss:// 等内容）
-        const statusLine = decodedBody.split('\n').find(line => line.startsWith("STATUS="));
-        if (!statusLine) {
-          console.log(`链接${index + 1} 无 STATUS= 行`);
-          msg = `⚠️ 解码后响应不包含 STATUS=，请确认机场支持`;
-        } else {
-          // 解析 STATUS= 后的内容
-          const statusContent = statusLine.replace("STATUS=", "").trim();
-          console.log(`链接${index + 1} STATUS 内容: ${statusContent}`);
-          const parsed = parseStatus(statusContent);
-          if (parsed.error) {
-            console.log(`链接${index + 1} 解析失败: ${parsed.error}`);
-            msg = `❗解析失败: ${parsed.error}`;
-          } else {
-            msg = [
-              `📤 上行: ${parsed.upload}`,
-              `📥 下行: ${parsed.download}`,
-              `📊 总计: ${parsed.total}`,
-              `⏰ 过期: ${parsed.expires}`
-            ].join("\n");
-          }
-        }
-      } catch (e)
+// 发送通知
+const time = new Date().toLocaleString("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false
+}).replace(/\//g, "-");
+$utils.notify("📡 机场订阅链接", time, notifyMsg);
+$utils.done();
