@@ -49,7 +49,10 @@ console.log(`原始参数: ${rawArgument}`);
 // 解析参数
 let subListRaw = "";
 try {
+  // 按 & 分割参数
   const argPairs = rawArgument.split("&");
+  console.log(`参数键值对: ${argPairs.join(", ")}`);
+  // 查找机场订阅链接
   for (const pair of argPairs) {
     if (pair.startsWith("机场订阅链接=")) {
       subListRaw = pair.replace("机场订阅链接=", "");
@@ -73,9 +76,12 @@ if (!subListRaw) {
 // 解析订阅链接
 let subList;
 try {
+  // 解码并按 & 分割
   const decodedList = decodeURIComponent(subListRaw).split("&");
+  console.log(`解码后的链接列表: ${decodedList.join(", ")}`);
+  // 宽松正则，仅要求 http:// 或 https:// 开头
   subList = decodedList.filter(i => /^https?:\/\/.+$/.test(i));
-  console.log(`解析后的链接: ${subList.join(", ")}`);
+  console.log(`过滤后的有效链接: ${subList.join(", ")}`);
 } catch (e) {
   console.log(`链接解析失败: ${e}`);
   $utils.notify("⚠️ 链接解析失败", "", `错误: ${e}`);
