@@ -1,4 +1,4 @@
-// Shadowrocket/Surge/QuanX 通用 - STATUS=Base64 格式机场流量通知脚本
+// Shadowrocket/Surge/QuanX 通用 - 获取并解码机场订阅链接内容
 // 参数名：机场订阅链接（多个用 & 分隔）
 
 const $utils = (() => {
@@ -49,10 +49,8 @@ console.log(`原始参数: ${rawArgument}`);
 // 解析参数
 let subListRaw = "";
 try {
-  // 按 & 分割参数
   const argPairs = rawArgument.split("&");
   console.log(`参数键值对: ${argPairs.join(", ")}`);
-  // 查找机场订阅链接
   for (const pair of argPairs) {
     if (pair.startsWith("机场订阅链接=")) {
       subListRaw = pair.replace("机场订阅链接=", "");
@@ -76,10 +74,8 @@ if (!subListRaw) {
 // 解析订阅链接
 let subList;
 try {
-  // 解码并按 & 分割
   const decodedList = decodeURIComponent(subListRaw).split("&");
   console.log(`解码后的链接列表: ${decodedList.join(", ")}`);
-  // 宽松正则，仅要求 http:// 或 https:// 开头
   subList = decodedList.filter(i => /^https?:\/\/.+$/.test(i));
   console.log(`过滤后的有效链接: ${subList.join(", ")}`);
 } catch (e) {
@@ -95,6 +91,7 @@ if (subList.length === 0) {
   $utils.done();
 }
 
+// 处理每个链接
 let resultList = [];
 let finished = 0;
 
@@ -102,50 +99,28 @@ subList.forEach((url, index) => {
   console.log(`请求链接${index + 1}: ${url}`);
   $utils.get(url, (err, resp, body) => {
     finished++;
-    let title = `🔗 链接${index + 1}（${getHostname(url)}）`;
-    let msg = "";
+    let msg = `链接${index + 1}: ${url}\n`;
 
     if (err) {
       console.log(`链接${index + 1} 请求错误: ${err}`);
-      msg = `❌ 请求错误: ${err}`;
+      msg += `❌ 请求错误: ${err}`;
     } else if (!body) {
       console.log(`链接${index + 1} 响应为空`);
-      msg = `⚠️ 响应为空，请确认链接有效`;
+      msg += `⚠️ 响应为空，请确认链接有效`;
     } else {
       console.log(`链接${index + 1} 原始响应: ${body}`);
       try {
         // 对整个 body 进行 Base64 解码
         const decodedBody = atob(body.trim());
         console.log(`链接${index + 1} 解码后: ${decodedBody}`);
-        // 提取 STATUS= 开头的一行（忽略 ss:// 等内容）
-        const statusLine = decodedBody.split('\n').find(line => line.startsWith("STATUS="));
-        if (!statusLine) {
-          console.log(`链接${index + 1} 无 STATUS= 行`);
-          msg = `⚠️ 解码后响应不包含 STATUS=，请确认机场支持`;
-        } else {
-          // 解析 STATUS= 后的内容
-          const statusContent = statusLine.replace("STATUS=", "").trim();
-          console.log(`链接${index + 1} STATUS 内容: ${statusContent}`);
-          const parsed = parseStatus(statusContent);
-          if (parsed.error) {
-            console.log(`链接${index + 1} 解析失败: ${parsed.error}`);
-            msg = `❗解析失败: ${parsed.error}`;
-          } else {
-            msg = [
-              `📤 上行: ${parsed.upload}`,
-              `📥 下行: ${parsed.download}`,
-              `📊 总计: ${parsed.total}`,
-              `⏰ 过期: ${parsed.expires}`
-            ].join("\n");
-          }
-        }
+        msg += `解码结果: ${decodedBody}`;
       } catch (e) {
         console.log(`链接${index + 1} 解码失败: ${e}`);
-        msg = `❗解码失败: ${e}`;
+        msg += `❗解码失败: ${e}`;
       }
     }
 
-    resultList.push(`${title}\n${msg}`);
+    resultList.push(msg);
     if (finished === subList.length) {
       const fullMsg = resultList.join("\n\n");
       // 使用当前时间，格式为 YYYY-MM-DD HH:MM:SS
@@ -159,40 +134,8 @@ subList.forEach((url, index) => {
         hour12: false
       }).replace(/\//g, "-");
       console.log(`发送通知: ${fullMsg}`);
-      $utils.notify("📡 机场流量通知", time, fullMsg);
+      $utils.notify("📡 机场订阅信息", time, fullMsg);
       $utils.done();
     }
   });
 });
-
-function parseStatus(status) {
-  try {
-    // 按逗号分割并提取键值对
-    const parts = status.split(",").map(part => part.trim());
-    const result = {};
-
-    parts.forEach(part => {
-      if (part.startsWith("↑:")) result.upload = part.replace("↑:", "");
-      else if (part.startsWith("↓:")) result.download = part.replace("↓:", "");
-      else if (part.startsWith("TOT:")) result.total = part.replace("TOT:", "");
-      else if (part.startsWith("Expires:")) result.expires = part.replace("Expires:", "");
-    });
-
-    // 验证是否包含所有必需字段
-    if (!result.upload || !result.download || !result.total || !result.expires) {
-      return { error: "缺少部分流量信息字段" };
-    }
-
-    return result;
-  } catch (e) {
-    return { error: `无法解析流量信息: ${e}` };
-  }
-}
-
-function getHostname(url) {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "未知地址";
-  }
-}
