@@ -12,11 +12,9 @@ const args = Object.fromEntries(($argument || "").split("&").map(i => i.split("=
 const urlList = decodeURIComponent(args["机场订阅链接"] || "").split("&").filter(Boolean);
 
 if (urlList.length === 0) {
-  $.notify("📡 机场流量通知", "", "❗未设置有效订阅链接");
+  $.notify("📡 机场流量通知", "", "❗未设置订阅链接");
   $.done();
 }
-
-const format = (bytes) => (bytes / (1 << 30)).toFixed(2) + " GB";
 
 let finished = 0;
 let output = [];
@@ -24,29 +22,42 @@ let output = [];
 urlList.forEach((url, index) => {
   const params = {
     url: url.trim(),
-    headers: { "User-Agent": "Shadowrocket" },
+    headers: {
+      "User-Agent": "Shadowrocket"
+    },
     timeout: 8000
   };
 
-  $.get(params, (err, resp, body) => {
+  $.get(params, (error, resp, body) => {
     finished++;
 
-    try {
-      const json = JSON.parse(body);
-      if (json.status !== "success" || !json.data || !json.data.usage) {
-        output.push(`🚫 链接${index + 1} 数据异常`);
-      } else {
-        const total = json.data.total || 0;
-        const upload = json.data.usage.upload || 0;
-        const download = json.data.usage.download || 0;
-        const used = upload + download;
+    if (error || !body) {
+      output.push(`🚫 链接${index + 1} 请求失败`);
+    } else {
+      try {
+        const decoded = decodeURIComponent(body);
 
-        output.push(
-          `🔗 链接${index + 1}：\n📊 ${format(used)} / ${format(total)} 已用`
-        );
+        if (!decoded.includes("STATUS=")) {
+          output.push(`❌ 链接${index + 1} 无有效 STATUS`);
+        } else {
+          // 匹配 STATUS=↑:0.94GB,↓:114.99GB,TOT:200GB,Expires:2025-06-06
+          const statusMatch = decoded.match(/STATUS=↑:(.*?),↓:(.*?),TOT:(.*?)(Expires:(.*))?/);
+          if (statusMatch) {
+            const upload = statusMatch[1];
+            const download = statusMatch[2];
+            const total = statusMatch[3];
+            const expire = statusMatch[5] || "未知";
+
+            output.push(
+              `🔗 链接${index + 1}：\n📤↑：${upload} | 📥↓：${download}\n📦 总量：${total}\n⏳ 到期：${expire}`
+            );
+          } else {
+            output.push(`⚠️ 链接${index + 1} 状态解析失败`);
+          }
+        }
+      } catch (e) {
+        output.push(`❌ 链接${index + 1} 解码失败`);
       }
-    } catch (e) {
-      output.push(`❌ 链接${index + 1} 解析失败`);
     }
 
     if (finished === urlList.length) {
