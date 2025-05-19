@@ -1,48 +1,57 @@
 const $ = $httpClient ? {
-    get: $httpClient.get,
-    notify: $notification.post,
-    done: $done
+  get: $httpClient.get,
+  notify: $notification.post,
+  done: $done
 } : {
-    get: (p, cb) => $task.fetch(p).then(r => cb(null, r, r.body)),
-    notify: (t, s, m) => $notify(t, s, m),
-    done: () => $done()
+  get: (params, cb) => $task.fetch(params).then(resp => cb(null, resp, resp.body)),
+  notify: (title, subtitle, message) => $notify(title, subtitle, message),
+  done: () => $done()
 };
 
 const args = Object.fromEntries(($argument || "").split("&").map(i => i.split("=")));
 const urlList = decodeURIComponent(args["机场订阅链接"] || "").split("&").filter(Boolean);
 
-let results = [], finished = 0;
+if (urlList.length === 0) {
+  $.notify("📡 机场流量通知", "", "❗未设置有效订阅链接");
+  $.done();
+}
 
-for (let i = 0; i < urlList.length; i++) {
-  const url = urlList[i];
+const format = (bytes) => (bytes / (1 << 30)).toFixed(2) + " GB";
+
+let finished = 0;
+let output = [];
+
+urlList.forEach((url, index) => {
   const params = {
-    url,
-    timeout: 5000,
-    headers: { "User-Agent": "QuantumultX" },
-    alpn: "h2"
+    url: url.trim(),
+    headers: { "User-Agent": "Shadowrocket" },
+    timeout: 8000
   };
 
-  $.get(params, function (err, resp, body) {
+  $.get(params, (err, resp, body) => {
     finished++;
 
     try {
       const json = JSON.parse(body);
-      if (json.status !== "success" || !json.data) {
-        results.push(`🚫 链接${i + 1} 返回格式异常`);
+      if (json.status !== "success" || !json.data || !json.data.usage) {
+        output.push(`🚫 链接${index + 1} 数据异常`);
       } else {
-        const { total, usage, appUrl } = json.data;
-        const format = b => (b / (1 << 30)).toFixed(2) + " GB";
-        const used = usage.upload + usage.download;
-        const msg = `🔗 链接${i + 1}\n📊 使用 ${format(used)} / ${format(total)}\n🌐 管理地址：${appUrl || "无"}`;
-        results.push(msg);
+        const total = json.data.total || 0;
+        const upload = json.data.usage.upload || 0;
+        const download = json.data.usage.download || 0;
+        const used = upload + download;
+
+        output.push(
+          `🔗 链接${index + 1}：\n📊 ${format(used)} / ${format(total)} 已用`
+        );
       }
     } catch (e) {
-      results.push(`❌ 链接${i + 1} 解析失败`);
+      output.push(`❌ 链接${index + 1} 解析失败`);
     }
 
     if (finished === urlList.length) {
-      $.notify("📡 机场流量通知", "", results.join("\n\n"));
+      $.notify("📡 机场流量通知", "", output.join("\n\n"));
       $.done();
     }
   });
-}
+});
