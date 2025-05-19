@@ -86,7 +86,7 @@ subList.forEach((url, index) => {
 
     if (err) {
       console.log(`链接${index + 1} 请求错误: ${err}`);
-      msg = `❌ 请求 错误: ${err}`;
+      msg = `❌ 请求错误: ${err}`;
     } else if (!body) {
       console.log(`链接${index + 1} 响应为空`);
       msg = `⚠️ 响应为空，请确认链接有效`;
@@ -118,62 +118,4 @@ subList.forEach((url, index) => {
             ].join("\n");
           }
         }
-      } catch (e) {
-        console.log(`链接${index + 1} 解码失败: ${e}`);
-        msg = `❗解码失败: ${e}`;
-      }
-    }
-
-    resultList.push(`${title}\n${msg}`);
-    if (finished === subList.length) {
-      const fullMsg = resultList.join("\n\n");
-      if (notifyEnable) {
-        // 使用当前时间，格式为 YYYY-MM-DD HH:MM:SS
-        const time = new Date().toLocaleString("zh-CN", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false
-        }).replace(/\//g, "-");
-        console.log(`发送通知: ${fullMsg}`);
-        $utils.notify("📡 机场流量通知", time, fullMsg);
-      }
-      $utils.done();
-    }
-  });
-});
-
-function parseStatus(status) {
-  try {
-    // 按逗号分割并提取键值对
-    const parts = status.split(",").map(part => part.trim());
-    const result = {};
-
-    parts.forEach(part => {
-      if (part.startsWith("↑:")) result.upload = part.replace("↑:", "");
-      else if (part.startsWith("↓:")) result.download = part.replace("↓:", "");
-      else if (part.startsWith("TOT:")) result.total = part.replace("TOT:", "");
-      else if (part.startsWith("Expires:")) result.expires = part.replace("Expires:", "");
-    });
-
-    // 验证是否包含所有必需字段
-    if (!result.upload || !result.download || !result.total || !result.expires) {
-      return { error: "缺少部分流量信息字段" };
-    }
-
-    return result;
-  } catch (e) {
-    return { error: `无法解析流量信息: ${e}` };
-  }
-}
-
-function getHostname(url) {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "未知地址";
-  }
-}
+      } catch (e)
