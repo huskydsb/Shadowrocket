@@ -1,6 +1,3 @@
-// Shadowrocket/Surge/QuanX 通用 - 显示机场订阅链接参数
-// 参数名：机场订阅链接（多个用 & 分隔）
-
 const $utils = (() => {
   const isSurge = typeof $httpClient !== "undefined";
   const isQuanX = typeof $task !== "undefined";
@@ -27,14 +24,35 @@ const $utils = (() => {
 
 console.log("脚本开始运行");
 
-// 获取原始参数
+// 时间格式化函数
+function now() {
+  let date = new Date();
+  return date.toLocaleString("zh-CN", { hour12: false }).replace(/\//g, "-");
+}
+
+// 自定义 Base64 解码（兼容小火箭）
+function base64Decode(str) {
+  try {
+    str = str.replace(/[-_]/g, m => (m === '-' ? '+' : '/'));
+    while (str.length % 4 !== 0) str += '=';
+    const b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    let output = '', buffer, bc = 0, bs, idx = 0;
+    for (; (buffer = str.charAt(idx++)); ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
+      bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0) {
+      buffer = b64.indexOf(buffer);
+    }
+    return output;
+  } catch (e) {
+    return `❌ Base64 解码失败：${e}`;
+  }
+}
+
+// 从参数获取订阅链接字符串
 const rawArgument = $argument || "";
 console.log(`原始参数: ${rawArgument}`);
 
-// 解析参数
 let subListRaw = "";
 try {
-  // 手动解析 argument，避免截断
   const argPairs = rawArgument.split("&");
   for (const pair of argPairs) {
     if (pair.startsWith("机场订阅链接=")) {
@@ -49,19 +67,17 @@ try {
   $utils.done();
 }
 
-// 检查参数是否为空
+// 参数非空校验
 if (!subListRaw) {
   console.log("未填写机场订阅链接");
   $utils.notify("❗️未填写机场订阅链接", "", "请检查模块参数");
   $utils.done();
 }
 
-// 解析订阅链接
+// 解析订阅链接数组
 let subList;
 try {
-  // 解码并按 & 分割，确保保留完整链接
   const decodedList = decodeURIComponent(subListRaw).split("&");
-  // 使用更宽松的正则，仅验证基本 URL 格式
   subList = decodedList.filter(i => /^https?:\/\/.+$/.test(i));
   console.log(`解析后的链接: ${subList.join(", ")}`);
 } catch (e) {
@@ -70,27 +86,97 @@ try {
   $utils.done();
 }
 
-// 检查是否有有效链接
 if (subList.length === 0) {
   console.log("无有效链接");
   $utils.notify("⚠️ 无有效链接", "", "请检查机场订阅链接是否正确");
   $utils.done();
 }
 
-// 生成通知内容
-const notifyMsg = subList.map((url, index) => `链接${index + 1}: ${url}`).join("\n");
-console.log(`通知内容: ${notifyMsg}`);
+// 请求和解析单个订阅链接
+function requestAndParse(url, callback) {
+  const headers = {
+    'cache-control': 'no-cache',
+    'accept-language': 'zh-CN,zh-Hans;q=0.9',
+    'accept': '*/*',
+    'accept-encoding': 'gzip, deflate, br',
+    'user-agent': 'Shadowrocket/2615 CFNetwork/3826.500.131 Darwin/24.5.0 iPhone14,3',
+  };
 
-// 发送通知
-const time = new Date().toLocaleString("zh-CN", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hour12: false
-}).replace(/\//g, "-");
+  const params = { url, headers, timeout: 5000, alpn: 'h2' };
+  console.log(`🕒 ${now()} 🚀 请求订阅链接: ${url}`);
 
-$utils.notify("📡 机场订阅链接", time, notifyMsg);
-$utils.done();
+  $httpClient.get(params, (error, response, data) => {
+    if (error) {
+      console.log(`🕒 ${now()} ❌ 请求错误：${error}`);
+      callback(`请求错误: ${error}`);
+      return;
+    }
+
+    console.log(`🕒 ${now()} 📥 响应状态码：${response.status}`);
+    if (response.status !== 200) {
+      console.log(`🕒 ${now()} ⚠️ 非200状态码，退出。`);
+      callback(`状态码异常: ${response.status}`);
+      return;
+    }
+
+    const preview = data.slice(0, 300);
+    const decoded = base64Decode(preview);
+    console.log(`🕒 ${now()} 🔍 解码前300字节内容预览：\n${preview}`);
+    console.log(`🕒 ${now()} 📄 解码内容预览：\n${decoded.split('\n').slice(0, 5).join('\n')}`);
+
+    const firstLine = decoded.split('\n')[0];
+    let info = {};
+
+    const trafficMatch = firstLine.match(/(\d+(?:\.\d+)?[KMG]B)/gi);
+    if (trafficMatch && trafficMatch.length >= 2) {
+      info.upload = trafficMatch[0];
+      info.download = trafficMatch[1];
+    }
+
+    const totalMatch = firstLine.match(/TOT:? *(\d+(?:\.\d+)?[KMG]B)/i);
+    if (totalMatch) {
+      info.total = totalMatch[1];
+    }
+
+    const expireMatch = firstLine.match(/Expires:? *([0-9\-]+)/i);
+    if (expireMatch) {
+      info.expire = expireMatch[1];
+    }
+
+    let result = `📊 流量信息：
+⬆️ 上传：${info.upload || '未知'}
+⬇️ 下载：${info.download || '未知'}
+📦 总量：${info.total || '未知'}
+⏰ 到期：${info.expire || '未知'}`;
+
+    console.log(`🕒 ${now()} ✅ 解析完成：\n${result}`);
+    callback(null, result);
+  });
+}
+
+// 依次请求所有订阅链接，汇总通知
+let results = [];
+let index = 0;
+
+function next() {
+  if (index >= subList.length) {
+    // 所有请求完成，统一通知并结束
+    const notifyMsg = results.map((res, i) => `链接${i + 1}:\n${res}`).join("\n\n");
+    $utils.notify("📡 机场订阅流量信息", now(), notifyMsg);
+    $utils.done();
+    return;
+  }
+
+  const url = subList[index];
+  requestAndParse(url, (err, res) => {
+    if (err) {
+      results.push(`链接请求失败：${err}`);
+    } else {
+      results.push(res);
+    }
+    index++;
+    next();
+  });
+}
+
+next();
