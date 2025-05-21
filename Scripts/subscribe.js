@@ -30,7 +30,6 @@ function now() {
   return date.toLocaleString("zh-CN", { hour12: false }).replace(/\//g, "-");
 }
 
-// 自定义 Base64 解码（兼容小火箭）
 function base64Decode(str) {
   try {
     str = str.replace(/[-_]/g, m => (m === '-' ? '+' : '/'));
@@ -160,7 +159,7 @@ function next() {
   if (index >= subList.length) {
     // 所有请求完成，统一通知并结束
     const notifyMsg = results.map((res, i) => `链接${i + 1}:\n${res}`).join("\n\n");
-    $utils.notify("📡 机场订阅流量信息", now(), notifyMsg);
+    $utils.notify("📡 机场订阅流量信息查询", now(), notifyMsg);
     $utils.done();
     return;
   }
