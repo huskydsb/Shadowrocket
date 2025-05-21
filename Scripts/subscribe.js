@@ -24,32 +24,11 @@ const $utils = (() => {
 
 console.log("脚本开始运行");
 
-// 时间格式化函数
-function now() {
-  let date = new Date();
-  return date.toLocaleString("zh-CN", { hour12: false }).replace(/\//g, "-");
-}
-
-function base64Decode(str) {
-  try {
-    str = str.replace(/[-_]/g, m => (m === '-' ? '+' : '/'));
-    while (str.length % 4 !== 0) str += '=';
-    const b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-    let output = '', buffer, bc = 0, bs, idx = 0;
-    for (; (buffer = str.charAt(idx++)); ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
-      bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0) {
-      buffer = b64.indexOf(buffer);
-    }
-    return output;
-  } catch (e) {
-    return `❌ Base64 解码失败：${e}`;
-  }
-}
-
-// 从参数获取订阅链接字符串
+// 获取原始参数
 const rawArgument = $argument || "";
 console.log(`原始参数: ${rawArgument}`);
 
+// 解析参数
 let subListRaw = "";
 try {
   const argPairs = rawArgument.split("&");
@@ -66,14 +45,12 @@ try {
   $utils.done();
 }
 
-// 参数非空校验
 if (!subListRaw) {
   console.log("未填写机场订阅链接");
   $utils.notify("❗️未填写机场订阅链接", "", "请检查模块参数");
   $utils.done();
 }
 
-// 解析订阅链接数组
 let subList;
 try {
   const decodedList = decodeURIComponent(subListRaw).split("&");
@@ -91,89 +68,90 @@ if (subList.length === 0) {
   $utils.done();
 }
 
-// 请求和解析单个订阅链接
-function requestAndParse(url, callback) {
-  const headers = {
-    'cache-control': 'no-cache',
-    'accept-language': 'zh-CN,zh-Hans;q=0.9',
-    'accept': '*/*',
-    'accept-encoding': 'gzip, deflate, br',
-    'user-agent': 'Shadowrocket/2615 CFNetwork/3826.500.131 Darwin/24.5.0 iPhone14,3',
-  };
-
-  const params = { url, headers, timeout: 5000, alpn: 'h2' };
-  console.log(`🕒 ${now()} 🚀 请求订阅链接: ${url}`);
-
-  $httpClient.get(params, (error, response, data) => {
-    if (error) {
-      console.log(`🕒 ${now()} ❌ 请求错误：${error}`);
-      callback(`请求错误: ${error}`);
-      return;
+// 自定义 Base64 解码（兼容小火箭）
+function base64Decode(str) {
+  try {
+    str = str.replace(/[-_]/g, m => (m === '-' ? '+' : '/'));
+    while (str.length % 4 !== 0) str += '=';
+    const b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    let output = '', buffer, bc = 0, bs, idx = 0;
+    for (; (buffer = str.charAt(idx++)); ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
+      bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0) {
+      buffer = b64.indexOf(buffer);
     }
+    return output;
+  } catch (e) {
+    return `❌ Base64 解码失败：${e}`;
+  }
+}
 
-    console.log(`🕒 ${now()} 📥 响应状态码：${response.status}`);
-    if (response.status !== 200) {
-      console.log(`🕒 ${now()} ⚠️ 非200状态码，退出。`);
-      callback(`状态码异常: ${response.status}`);
-      return;
-    }
+// 请求和解析订阅链接，返回Promise
+function requestAndParse(url, index) {
+  return new Promise((resolve) => {
+    const headers = {
+      'cache-control': 'no-cache',
+      'accept-language': 'zh-CN,zh-Hans;q=0.9',
+      'accept': '*/*',
+      'accept-encoding': 'gzip, deflate, br',
+      'user-agent': 'Shadowrocket/2615 CFNetwork/3826.500.131 Darwin/24.5.0 iPhone14,3',
+    };
+    const params = { url, headers, timeout: 5000, alpn: 'h2' };
 
-    const preview = data.slice(0, 300);
-    const decoded = base64Decode(preview);
-    console.log(`🕒 ${now()} 🔍 解码前300字节内容预览：\n${preview}`);
-    console.log(`🕒 ${now()} 📄 解码内容预览：\n${decoded.split('\n').slice(0, 5).join('\n')}`);
+    console.log(`开始请求第${index + 1}个链接：${url}`);
+    $httpClient.get(params, (error, response, data) => {
+      if (error) {
+        console.log(`请求错误：${error}`);
+        resolve(`链接${index + 1}请求失败：${error}`);
+        return;
+      }
+      if (response.status !== 200) {
+        console.log(`状态码异常：${response.status}`);
+        resolve(`链接${index + 1}请求异常，状态码：${response.status}`);
+        return;
+      }
+      const preview = data.slice(0, 300);
+      const decoded = base64Decode(preview);
+      console.log(`链接${index + 1}解码内容预览：\n${decoded.split('\n').slice(0, 5).join('\n')}`);
 
-    const firstLine = decoded.split('\n')[0];
-    let info = {};
+      const firstLine = decoded.split('\n')[0] || "";
+      let info = {};
 
-    const trafficMatch = firstLine.match(/(\d+(?:\.\d+)?[KMG]B)/gi);
-    if (trafficMatch && trafficMatch.length >= 2) {
-      info.upload = trafficMatch[0];
-      info.download = trafficMatch[1];
-    }
+      const trafficMatch = firstLine.match(/(\d+(?:\.\d+)?[KMG]B)/gi);
+      if (trafficMatch && trafficMatch.length >= 2) {
+        info.upload = trafficMatch[0];
+        info.download = trafficMatch[1];
+      }
 
-    const totalMatch = firstLine.match(/TOT:? *(\d+(?:\.\d+)?[KMG]B)/i);
-    if (totalMatch) {
-      info.total = totalMatch[1];
-    }
+      const totalMatch = firstLine.match(/TOT:? *(\d+(?:\.\d+)?[KMG]B)/i);
+      if (totalMatch) {
+        info.total = totalMatch[1];
+      }
 
-    const expireMatch = firstLine.match(/Expires:? *([0-9\-]+)/i);
-    if (expireMatch) {
-      info.expire = expireMatch[1];
-    }
+      const expireMatch = firstLine.match(/Expires:? *([0-9\-]+)/i);
+      if (expireMatch) {
+        info.expire = expireMatch[1];
+      }
 
-    let result = `📊 机场${index + 1}流量信息：
+      let result = `📊 机场${index + 1}流量信息：
 ⬆️ 上传：${info.upload || '未知'} ⬇️ 下载：${info.download || '未知'}
 📦 总量：${info.total || '未知'} ⏰ 到期：${info.expire || '未知'}`;
 
-    console.log(`🕒 ${now()} ✅ 解析完成：\n${result}`);
-    callback(null, result);
+      resolve(result);
+    });
   });
 }
 
-// 依次请求所有订阅链接，汇总通知
-let results = [];
-let index = 0;
-
-function next() {
-  if (index >= subList.length) {
-    // 所有请求完成，统一通知并结束
-    const notifyMsg = results.map((res, i) => `链接${i + 1}:\n${res}`).join("\n\n");
-    $utils.notify("📡 机场订阅流量信息查询", now(), notifyMsg);
-    $utils.done();
-    return;
+// 依次请求所有链接并汇总通知
+(async () => {
+  let results = [];
+  for (let i = 0; i < subList.length; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    let res = await requestAndParse(subList[i], i);
+    results.push(res);
   }
+  const notifyMsg = results.join("\n\n");
+  console.log(`通知内容:\n${notifyMsg}`);
 
-  const url = subList[index];
-  requestAndParse(url, (err, res) => {
-    if (err) {
-      results.push(`链接请求失败：${err}`);
-    } else {
-      results.push(res);
-    }
-    index++;
-    next();
-  });
-}
-
-next();
+  $utils.notify("📡 机场订阅流量信息", "", notifyMsg);
+  $utils.done();
+})();
