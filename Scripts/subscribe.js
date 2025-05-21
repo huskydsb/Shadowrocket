@@ -101,12 +101,12 @@ function requestAndParse(url, index) {
     $httpClient.get(params, (error, response, data) => {
       if (error) {
         console.log(`请求错误：${error}`);
-        resolve(`链接${index + 1}请求失败：${error}`);
+        resolve({ index, message: `链接${index + 1}请求失败：${error}` });
         return;
       }
       if (response.status !== 200) {
         console.log(`状态码异常：${response.status}`);
-        resolve(`链接${index + 1}请求异常，状态码：${response.status}`);
+        resolve({ index, message: `链接${index + 1}请求异常，状态码：${response.status}` });
         return;
       }
       const preview = data.slice(0, 300);
@@ -136,22 +136,18 @@ function requestAndParse(url, index) {
 ⬆️ 上传：${info.upload || '未知'} ⬇️ 下载：${info.download || '未知'}
 📦 总量：${info.total || '未知'} ⏰ 到期：${info.expire || '未知'}`;
 
-      resolve(result);
+      resolve({ index, message: result });
     });
   });
 }
 
-// 依次请求所有链接并汇总通知
+// 依次请求所有链接并单独通知
 (async () => {
-  let results = [];
   for (let i = 0; i < subList.length; i++) {
     // eslint-disable-next-line no-await-in-loop
     let res = await requestAndParse(subList[i], i);
-    results.push(res);
+    console.log(`通知第${res.index + 1}个机场`);
+    $utils.notify(`📡 机场${res.index + 1}流量信息`, "", res.message);
   }
-  const notifyMsg = results.join("\n\n");
-  console.log(`通知内容:\n${notifyMsg}`);
-
-  $utils.notify("📡 机场订阅流量信息", "", notifyMsg);
   $utils.done();
 })();
