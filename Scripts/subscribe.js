@@ -143,11 +143,9 @@ function requestAndParse(url, callback) {
       info.expire = expireMatch[1];
     }
 
-    let result = `📊 流量信息：
-⬆️ 上传：${info.upload || '未知'}
-⬇️ 下载：${info.download || '未知'}
-📦 总量：${info.total || '未知'}
-⏰ 到期：${info.expire || '未知'}`;
+    let result = `📊 机场${index + 1}流量信息：
+⬆️ 上传：${info.upload || '未知'} ⬇️ 下载：${info.download || '未知'}
+📦 总量：${info.total || '未知'} ⏰ 到期：${info.expire || '未知'}`;
 
     console.log(`🕒 ${now()} ✅ 解析完成：\n${result}`);
     callback(null, result);
