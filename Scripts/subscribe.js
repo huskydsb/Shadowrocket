@@ -28,7 +28,7 @@ let subListRaw = "";
 
 try {
   const match = rawArgument.match(/机场订阅链接=(.+)/);
-  if (match) subListRaw = decodeURIComponent(match[1]); // ✅ 解码
+  if (match) subListRaw = match[1];
   console.log(`提取的原始链接串: ${subListRaw}`);
 } catch (e) {
   $utils.notify("❗️参数解析失败", `错误: ${e}`);
@@ -40,11 +40,10 @@ if (!subListRaw) {
   $utils.done();
 }
 
-// 多个链接以 & 分隔，并自动清理空格或换行
-let subList = subListRaw
-  .split("&")
-  .map(s => s.trim()) // ✅ 去除首尾空格
-  .filter(s => /^https?:\/\/.+/.test(s)); // ✅ 过滤非法项
+// 多个链接以 & 分隔，先去除前后空格，然后 decodeURIComponent 恢复
+let subList = subListRaw.split("&")
+  .map(s => decodeURIComponent(s.trim()))
+  .filter(s => /^https?:\/\/.+/.test(s));
 
 if (subList.length === 0) {
   $utils.notify("⚠️ 无有效链接", "请检查机场订阅链接是否正确");
@@ -68,18 +67,6 @@ function base64Decode(str) {
   }
 }
 
-// 字节单位换算
-function formatBytes(bytes) {
-  if (isNaN(bytes)) return '未知';
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  let i = 0;
-  while (bytes >= 1024 && i < units.length - 1) {
-    bytes /= 1024;
-    i++;
-  }
-  return bytes.toFixed(2) + units[i];
-}
-
 // 单个机场解析
 function requestAndNotify(url, index) {
   return new Promise((resolve) => {
@@ -94,7 +81,7 @@ function requestAndNotify(url, index) {
     const params = {
       url: url,
       headers: headers,
-      timeout: 5000,
+      timeout: 8000,
       alpn: 'h2',
     };
 
@@ -106,35 +93,26 @@ function requestAndNotify(url, index) {
         return;
       }
 
-      let info = {
-        upload: '未知',
-        download: '未知',
-        total: '未知',
-        expire: '未知',
-      };
-
-      // 优先从响应头中读取
-      const userinfo = response.headers["Subscription-Userinfo"] || response.headers["subscription-userinfo"];
-      if (userinfo) {
-        const matches = {
-          upload: userinfo.match(/upload=(\d+)/),
-          download: userinfo.match(/download=(\d+)/),
-          total: userinfo.match(/total=(\d+)/),
-          expire: userinfo.match(/expire=(\d+)/),
-        };
-
-        if (matches.upload) info.upload = formatBytes(parseInt(matches.upload[1]));
-        if (matches.download) info.download = formatBytes(parseInt(matches.download[1]));
-        if (matches.total) info.total = formatBytes(parseInt(matches.total[1]));
-        if (matches.expire) {
-          const ts = parseInt(matches.expire[1]);
-          if (ts > 0 && ts < 9999999999) {
-            const d = new Date(ts * 1000);
-            info.expire = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+      // 优先解析 response header 中的 Subscription-Userinfo
+      const info = {};
+      const infoStr = response.headers["Subscription-Userinfo"] || response.headers["subscription-userinfo"];
+      if (infoStr) {
+        const pairs = infoStr.split(";");
+        pairs.forEach(p => {
+          let [key, value] = p.split("=").map(s => s.trim());
+          if (["upload", "download", "total"].includes(key) && !isNaN(Number(value))) {
+            const size = formatBytes(Number(value));
+            info[key] = size;
+          } else if (key === "expire") {
+            const timestamp = parseInt(value);
+            if (!isNaN(timestamp) && timestamp > 0) {
+              const expireDate = new Date(timestamp * 1000);
+              info.expire = expireDate.toISOString().split("T")[0];
+            }
           }
-        }
+        });
       } else {
-        // 备用：尝试从 base64 解码内容里解析
+        // 如果 headers 没有信息，尝试从 body 解码第一行
         const decoded = base64Decode(data.slice(0, 300));
         const firstLine = decoded.split('\n')[0] || "";
 
@@ -151,11 +129,19 @@ function requestAndNotify(url, index) {
         if (expireMatch) info.expire = expireMatch[1];
       }
 
-      const result = `⬆️ 上传：${info.upload}  ⬇️ 下载：${info.download}\n🚀 总量：${info.total} ⏰ 到期：${info.expire}`;
+      let result = `⬆️ 上传：${info.upload || '未知'}  ⬇️ 下载：${info.download || '未知'}\n🚀 总量：${info.total || '未知'} ⏰ 到期：${info.expire || '未知'}`;
       $utils.notify(`📊 机场${index + 1}流量信息`, result);
       resolve();
     });
   });
+}
+
+function formatBytes(bytes) {
+  if (bytes >= 1099511627776) return (bytes / 1099511627776).toFixed(2) + ' TB';
+  if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+  if (bytes >= 1048576) return (bytes / 1048576).toFixed(2) + ' MB';
+  if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KB';
+  return bytes + ' B';
 }
 
 // 顺序执行
