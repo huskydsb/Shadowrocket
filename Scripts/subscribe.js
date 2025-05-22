@@ -64,6 +64,18 @@ function base64Decode(str) {
   }
 }
 
+// 字节单位换算
+function formatBytes(bytes) {
+  if (isNaN(bytes)) return '未知';
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let i = 0;
+  while (bytes >= 1024 && i < units.length - 1) {
+    bytes /= 1024;
+    i++;
+  }
+  return bytes.toFixed(2) + units[i];
+}
+
 // 单个机场解析
 function requestAndNotify(url, index) {
   return new Promise((resolve) => {
@@ -90,23 +102,52 @@ function requestAndNotify(url, index) {
         return;
       }
 
-      const decoded = base64Decode(data.slice(0, 300));
-      const firstLine = decoded.split('\n')[0] || "";
-      let info = {};
+      let info = {
+        upload: '未知',
+        download: '未知',
+        total: '未知',
+        expire: '未知',
+      };
 
-      const trafficMatch = firstLine.match(/(\d+(?:\.\d+)?[KMG]B)/gi);
-      if (trafficMatch && trafficMatch.length >= 2) {
-        info.upload = trafficMatch[0];
-        info.download = trafficMatch[1];
+      // 优先尝试从响应头提取 Subscription-Userinfo
+      const userinfo = response.headers["Subscription-Userinfo"] || response.headers["subscription-userinfo"];
+      if (userinfo) {
+        const matches = {
+          upload: userinfo.match(/upload=(\d+)/),
+          download: userinfo.match(/download=(\d+)/),
+          total: userinfo.match(/total=(\d+)/),
+          expire: userinfo.match(/expire=(\d+)/),
+        };
+
+        if (matches.upload) info.upload = formatBytes(parseInt(matches.upload[1]));
+        if (matches.download) info.download = formatBytes(parseInt(matches.download[1]));
+        if (matches.total) info.total = formatBytes(parseInt(matches.total[1]));
+        if (matches.expire) {
+          const ts = parseInt(matches.expire[1]);
+          if (ts > 0 && ts < 9999999999) {
+            const d = new Date(ts * 1000);
+            info.expire = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+          }
+        }
+      } else {
+        // 备用方式：Base64 解码前300字符尝试提取
+        const decoded = base64Decode(data.slice(0, 300));
+        const firstLine = decoded.split('\n')[0] || "";
+
+        const trafficMatch = firstLine.match(/(\d+(?:\.\d+)?[KMG]B)/gi);
+        if (trafficMatch && trafficMatch.length >= 2) {
+          info.upload = trafficMatch[0];
+          info.download = trafficMatch[1];
+        }
+
+        const totalMatch = firstLine.match(/TOT:? *(\d+(?:\.\d+)?[KMG]B)/i);
+        if (totalMatch) info.total = totalMatch[1];
+
+        const expireMatch = firstLine.match(/Expires:? *([0-9\-]+)/i);
+        if (expireMatch) info.expire = expireMatch[1];
       }
 
-      const totalMatch = firstLine.match(/TOT:? *(\d+(?:\.\d+)?[KMG]B)/i);
-      if (totalMatch) info.total = totalMatch[1];
-
-      const expireMatch = firstLine.match(/Expires:? *([0-9\-]+)/i);
-      if (expireMatch) info.expire = expireMatch[1];
-
-      let result = `⬆️ 上传：${info.upload || '未知'}  ⬇️ 下载：${info.download || '未知'}\n🚀 总量：${info.total || '未知'} ⏰ 到期：${info.expire || '未知'}`;
+      const result = `⬆️ 上传：${info.upload}  ⬇️ 下载：${info.download}\n🚀 总量：${info.total} ⏰ 到期：${info.expire}`;
       $utils.notify(`📊 机场${index + 1}流量信息`, result);
       resolve();
     });
