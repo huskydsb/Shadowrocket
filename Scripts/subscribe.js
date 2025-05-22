@@ -28,7 +28,7 @@ let subListRaw = "";
 
 try {
   const match = rawArgument.match(/机场订阅链接=(.+)/);
-  if (match) subListRaw = match[1];
+  if (match) subListRaw = decodeURIComponent(match[1]); // ✅ 解码
   console.log(`提取的原始链接串: ${subListRaw}`);
 } catch (e) {
   $utils.notify("❗️参数解析失败", `错误: ${e}`);
@@ -40,8 +40,12 @@ if (!subListRaw) {
   $utils.done();
 }
 
-// 多个链接以 & 分隔
-let subList = subListRaw.split("&").map(s => s.trim()).filter(s => /^https?:\/\/.+/.test(s));
+// 多个链接以 & 分隔，并自动清理空格或换行
+let subList = subListRaw
+  .split("&")
+  .map(s => s.trim()) // ✅ 去除首尾空格
+  .filter(s => /^https?:\/\/.+/.test(s)); // ✅ 过滤非法项
+
 if (subList.length === 0) {
   $utils.notify("⚠️ 无有效链接", "请检查机场订阅链接是否正确");
   $utils.done();
@@ -109,7 +113,7 @@ function requestAndNotify(url, index) {
         expire: '未知',
       };
 
-      // 优先尝试从响应头提取 Subscription-Userinfo
+      // 优先从响应头中读取
       const userinfo = response.headers["Subscription-Userinfo"] || response.headers["subscription-userinfo"];
       if (userinfo) {
         const matches = {
@@ -130,7 +134,7 @@ function requestAndNotify(url, index) {
           }
         }
       } else {
-        // 备用方式：Base64 解码前300字符尝试提取
+        // 备用：尝试从 base64 解码内容里解析
         const decoded = base64Decode(data.slice(0, 300));
         const firstLine = decoded.split('\n')[0] || "";
 
