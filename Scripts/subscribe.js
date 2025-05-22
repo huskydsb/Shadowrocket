@@ -40,11 +40,11 @@ if (!subListRaw) {
   $utils.done();
 }
 
-// 提取所有 http(s) 开头的链接，兼容任意分隔符
+// 使用正则提取 http 开头的合法链接（避免&等被错误分割）
 let subList = subListRaw.match(/https?:\/\/[^\s@&]+/g) || [];
 
 if (subList.length === 0) {
-  $utils.notify("⚠️ 无有效链接", "请检查机场订阅链接是否正确");
+  $utils.notify("⚠️ 无有效链接", "请检查订阅链接格式是否正确");
   $utils.done();
 }
 
@@ -103,14 +103,14 @@ function requestAndNotify(url, index) {
       }
 
       let info = {
-        upload: null,
-        download: null,
-        total: null,
-        expire: null,
+        upload: '未知',
+        download: '未知',
+        total: '未知',
+        expire: '未知',
       };
 
-      // 一、尝试从响应头解析
-      const userinfo = response.headers["Subscription-Userinfo"] || response.headers["subscription-userinfo"];
+      // 优先解析响应头
+      const userinfo = response.headers["subscription-userinfo"] || response.headers["Subscription-Userinfo"];
       if (userinfo) {
         const matches = {
           upload: userinfo.match(/upload=(\d+)/),
@@ -129,31 +129,25 @@ function requestAndNotify(url, index) {
             info.expire = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
           }
         }
-      }
+      } else {
+        // 解析 body 内容
+        const decoded = base64Decode(data.slice(0, 300));
+        const firstLine = decoded.split('\n')[0] || "";
 
-      // 二、如果头信息不全，则尝试从 base64 内容中解析补全
-      const decoded = base64Decode(data.slice(0, 300));
-      const firstLine = decoded.split('\n')[0] || "";
-
-      if (!info.upload || !info.download) {
         const trafficMatch = firstLine.match(/(\d+(?:\.\d+)?[KMG]B)/gi);
         if (trafficMatch && trafficMatch.length >= 2) {
-          if (!info.upload) info.upload = trafficMatch[0];
-          if (!info.download) info.download = trafficMatch[1];
+          info.upload = trafficMatch[0];
+          info.download = trafficMatch[1];
         }
-      }
 
-      if (!info.total) {
         const totalMatch = firstLine.match(/TOT:? *(\d+(?:\.\d+)?[KMG]B)/i);
         if (totalMatch) info.total = totalMatch[1];
-      }
 
-      if (!info.expire) {
         const expireMatch = firstLine.match(/Expires:? *([0-9\-]+)/i);
         if (expireMatch) info.expire = expireMatch[1];
       }
 
-      const result = `⬆️ 上传：${info.upload || '未知'}  ⬇️ 下载：${info.download || '未知'}\n🚀 总量：${info.total || '未知'} ⏰ 到期：${info.expire || '未知'}`;
+      const result = `⬆️ 上传：${info.upload}  ⬇️ 下载：${info.download}\n🚀 总量：${info.total} ⏰ 到期：${info.expire}`;
       $utils.notify(`📊 机场${index + 1}流量信息`, result);
       resolve();
     });
