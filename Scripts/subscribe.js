@@ -28,11 +28,8 @@ let subListRaw = "";
 
 try {
   const match = rawArgument.match(/机场订阅链接=(.+)/);
-  if (match) {
-    // 解码 URL 编码后的参数
-    subListRaw = decodeURIComponent(match[1]);
-    console.log(`解码后的参数: ${subListRaw}`);
-  }
+  if (match) subListRaw = decodeURIComponent(match[1]);
+  console.log(`提取的原始链接串: ${subListRaw}`);
 } catch (e) {
   $utils.notify("❗️参数解析失败", `错误: ${e}`);
   $utils.done();
@@ -43,9 +40,9 @@ if (!subListRaw) {
   $utils.done();
 }
 
-// 使用正则匹配 http/https 链接，避免被 & 空格影响
-let subList = subListRaw.match(/https?:\/\/[^\s&]+/g) || [];
-subList = subList.map(s => s.trim());
+// 提取所有 http(s) 开头的链接，兼容任意分隔符
+let subList = subListRaw.match(/https?:\/\/[^\s@&]+/g) || [];
+
 if (subList.length === 0) {
   $utils.notify("⚠️ 无有效链接", "请检查机场订阅链接是否正确");
   $utils.done();
@@ -68,7 +65,18 @@ function base64Decode(str) {
   }
 }
 
-// 单个机场请求与解析
+function formatBytes(bytes) {
+  if (isNaN(bytes)) return '未知';
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let i = 0;
+  while (bytes >= 1024 && i < units.length - 1) {
+    bytes /= 1024;
+    i++;
+  }
+  return bytes.toFixed(2) + units[i];
+}
+
+// 单个机场解析
 function requestAndNotify(url, index) {
   return new Promise((resolve) => {
     const headers = {
@@ -82,7 +90,7 @@ function requestAndNotify(url, index) {
     const params = {
       url: url,
       headers: headers,
-      timeout: 8000,
+      timeout: 5000,
       alpn: 'h2',
     };
 
@@ -94,55 +102,65 @@ function requestAndNotify(url, index) {
         return;
       }
 
-      let info = {};
-      const userinfo = response.headers["Subscription-Userinfo"];
+      let info = {
+        upload: null,
+        download: null,
+        total: null,
+        expire: null,
+      };
+
+      // 一、尝试从响应头解析
+      const userinfo = response.headers["Subscription-Userinfo"] || response.headers["subscription-userinfo"];
       if (userinfo) {
-        const parseTraffic = (key) => {
-          const match = userinfo.match(new RegExp(`${key}=(\\d+)`));
-          if (!match) return '未知';
-          let val = parseInt(match[1]);
-          if (val > 1e12) return (val / 1099511627776).toFixed(2) + ' TB';
-          if (val > 1e9) return (val / 1073741824).toFixed(2) + ' GB';
-          if (val > 1e6) return (val / 1048576).toFixed(2) + ' MB';
-          return val + ' B';
+        const matches = {
+          upload: userinfo.match(/upload=(\d+)/),
+          download: userinfo.match(/download=(\d+)/),
+          total: userinfo.match(/total=(\d+)/),
+          expire: userinfo.match(/expire=(\d+)/),
         };
 
-        info.upload = parseTraffic("upload");
-        info.download = parseTraffic("download");
-        info.total = parseTraffic("total");
-
-        const expireMatch = userinfo.match(/expire=(\d+)/);
-        if (expireMatch) {
-          const ts = parseInt(expireMatch[1]) * 1000;
-          info.expire = isNaN(ts) ? '未知' : new Date(ts).toISOString().split('T')[0];
-        } else {
-          info.expire = "未知";
+        if (matches.upload) info.upload = formatBytes(parseInt(matches.upload[1]));
+        if (matches.download) info.download = formatBytes(parseInt(matches.download[1]));
+        if (matches.total) info.total = formatBytes(parseInt(matches.total[1]));
+        if (matches.expire) {
+          const ts = parseInt(matches.expire[1]);
+          if (ts > 0 && ts < 9999999999) {
+            const d = new Date(ts * 1000);
+            info.expire = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+          }
         }
+      }
 
-      } else {
-        // 如果无 headers，用 Base64 内容猜测
-        const decoded = base64Decode(data.slice(0, 300));
-        const firstLine = decoded.split('\n')[0] || "";
+      // 二、如果头信息不全，则尝试从 base64 内容中解析补全
+      const decoded = base64Decode(data.slice(0, 300));
+      const firstLine = decoded.split('\n')[0] || "";
+
+      if (!info.upload || !info.download) {
         const trafficMatch = firstLine.match(/(\d+(?:\.\d+)?[KMG]B)/gi);
         if (trafficMatch && trafficMatch.length >= 2) {
-          info.upload = trafficMatch[0];
-          info.download = trafficMatch[1];
+          if (!info.upload) info.upload = trafficMatch[0];
+          if (!info.download) info.download = trafficMatch[1];
         }
+      }
+
+      if (!info.total) {
         const totalMatch = firstLine.match(/TOT:? *(\d+(?:\.\d+)?[KMG]B)/i);
         if (totalMatch) info.total = totalMatch[1];
+      }
 
+      if (!info.expire) {
         const expireMatch = firstLine.match(/Expires:? *([0-9\-]+)/i);
         if (expireMatch) info.expire = expireMatch[1];
       }
 
-      let result = `⬆️ 上传：${info.upload || '未知'}  ⬇️ 下载：${info.download || '未知'}\n🚀 总量：${info.total || '未知'} ⏰ 到期：${info.expire || '未知'}`;
-      $utils.notify(`📊 机场${index + 1} 流量信息`, result);
+      const result = `⬆️ 上传：${info.upload || '未知'}  ⬇️ 下载：${info.download || '未知'}\n🚀 总量：${info.total || '未知'} ⏰ 到期：${info.expire || '未知'}`;
+      $utils.notify(`📊 机场${index + 1}流量信息`, result);
       resolve();
     });
   });
 }
 
-// 顺序请求多个订阅链接
+// 顺序执行
 (async () => {
   for (let i = 0; i < subList.length; i++) {
     await requestAndNotify(subList[i], i);
