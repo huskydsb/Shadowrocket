@@ -28,8 +28,11 @@ let subListRaw = "";
 
 try {
   const match = rawArgument.match(/机场订阅链接=(.+)/);
-  if (match) subListRaw = match[1];
-  console.log(`提取的原始链接串: ${subListRaw}`);
+  if (match) {
+    // 解码 URL 编码后的参数
+    subListRaw = decodeURIComponent(match[1]);
+    console.log(`解码后的参数: ${subListRaw}`);
+  }
 } catch (e) {
   $utils.notify("❗️参数解析失败", `错误: ${e}`);
   $utils.done();
@@ -40,11 +43,9 @@ if (!subListRaw) {
   $utils.done();
 }
 
-// 多个链接以 & 分隔，先去除前后空格，然后 decodeURIComponent 恢复
-let subList = subListRaw.split("&")
-  .map(s => decodeURIComponent(s.trim()))
-  .filter(s => /^https?:\/\/.+/.test(s));
-
+// 使用正则匹配 http/https 链接，避免被 & 空格影响
+let subList = subListRaw.match(/https?:\/\/[^\s&]+/g) || [];
+subList = subList.map(s => s.trim());
 if (subList.length === 0) {
   $utils.notify("⚠️ 无有效链接", "请检查机场订阅链接是否正确");
   $utils.done();
@@ -67,7 +68,7 @@ function base64Decode(str) {
   }
 }
 
-// 单个机场解析
+// 单个机场请求与解析
 function requestAndNotify(url, index) {
   return new Promise((resolve) => {
     const headers = {
@@ -93,35 +94,40 @@ function requestAndNotify(url, index) {
         return;
       }
 
-      // 优先解析 response header 中的 Subscription-Userinfo
-      const info = {};
-      const infoStr = response.headers["Subscription-Userinfo"] || response.headers["subscription-userinfo"];
-      if (infoStr) {
-        const pairs = infoStr.split(";");
-        pairs.forEach(p => {
-          let [key, value] = p.split("=").map(s => s.trim());
-          if (["upload", "download", "total"].includes(key) && !isNaN(Number(value))) {
-            const size = formatBytes(Number(value));
-            info[key] = size;
-          } else if (key === "expire") {
-            const timestamp = parseInt(value);
-            if (!isNaN(timestamp) && timestamp > 0) {
-              const expireDate = new Date(timestamp * 1000);
-              info.expire = expireDate.toISOString().split("T")[0];
-            }
-          }
-        });
+      let info = {};
+      const userinfo = response.headers["Subscription-Userinfo"];
+      if (userinfo) {
+        const parseTraffic = (key) => {
+          const match = userinfo.match(new RegExp(`${key}=(\\d+)`));
+          if (!match) return '未知';
+          let val = parseInt(match[1]);
+          if (val > 1e12) return (val / 1099511627776).toFixed(2) + ' TB';
+          if (val > 1e9) return (val / 1073741824).toFixed(2) + ' GB';
+          if (val > 1e6) return (val / 1048576).toFixed(2) + ' MB';
+          return val + ' B';
+        };
+
+        info.upload = parseTraffic("upload");
+        info.download = parseTraffic("download");
+        info.total = parseTraffic("total");
+
+        const expireMatch = userinfo.match(/expire=(\d+)/);
+        if (expireMatch) {
+          const ts = parseInt(expireMatch[1]) * 1000;
+          info.expire = isNaN(ts) ? '未知' : new Date(ts).toISOString().split('T')[0];
+        } else {
+          info.expire = "未知";
+        }
+
       } else {
-        // 如果 headers 没有信息，尝试从 body 解码第一行
+        // 如果无 headers，用 Base64 内容猜测
         const decoded = base64Decode(data.slice(0, 300));
         const firstLine = decoded.split('\n')[0] || "";
-
         const trafficMatch = firstLine.match(/(\d+(?:\.\d+)?[KMG]B)/gi);
         if (trafficMatch && trafficMatch.length >= 2) {
           info.upload = trafficMatch[0];
           info.download = trafficMatch[1];
         }
-
         const totalMatch = firstLine.match(/TOT:? *(\d+(?:\.\d+)?[KMG]B)/i);
         if (totalMatch) info.total = totalMatch[1];
 
@@ -130,21 +136,13 @@ function requestAndNotify(url, index) {
       }
 
       let result = `⬆️ 上传：${info.upload || '未知'}  ⬇️ 下载：${info.download || '未知'}\n🚀 总量：${info.total || '未知'} ⏰ 到期：${info.expire || '未知'}`;
-      $utils.notify(`📊 机场${index + 1}流量信息`, result);
+      $utils.notify(`📊 机场${index + 1} 流量信息`, result);
       resolve();
     });
   });
 }
 
-function formatBytes(bytes) {
-  if (bytes >= 1099511627776) return (bytes / 1099511627776).toFixed(2) + ' TB';
-  if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
-  if (bytes >= 1048576) return (bytes / 1048576).toFixed(2) + ' MB';
-  if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KB';
-  return bytes + ' B';
-}
-
-// 顺序执行
+// 顺序请求多个订阅链接
 (async () => {
   for (let i = 0; i < subList.length; i++) {
     await requestAndNotify(subList[i], i);
