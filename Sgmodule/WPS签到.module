@@ -1,0 +1,18 @@
+#!name=WPS 签到任务
+#!desc=获取 WPS 签到所需的 Cookie 并执行定时签到任务，默认每 12 小时执行一次。
+#!openUrl=https://www.wps.cn
+#!author=wf021325[https://github.com/wf021325]
+#!icon=https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/icon/task/wps.png
+#!arguments=启用Cookie获取:true, 签到任务时间:0 */12 * * *, 启用签到任务:true
+#!arguments-desc=\n★参数说明:\n\n - 启用Cookie获取: 是否启用 WPS Cookie 抓取功能\n\n - 签到任务时间: Cron 表达式（默认每 12 小时执行一次）\n\n - 启用签到任务: 是否启用定时签到\n\n\n★提示:\n\n - 打开 WPS App 登录即可触发 Cookie 抓取\n - Cron 示例：每 12 小时 → `0 */12 * * *`；每天 08:00 → `0 8 * * *`
+
+[Script]
+
+# ===== 获取 WPS Cookie =====
+WPS获取Cookie = type=http-request, pattern=^https:\/\/(vip|account)(userinfo|\.wps\.cn\/p\/auth\/check)$, requires-body=true, script-path=https://raw.githubusercontent.com/wf021325/qx/master/task/wps.js, enable={{{启用Cookie获取}}}, timeout=60
+
+# ===== WPS 签到任务 =====
+WPS签到 = type=cron, script-path=https://raw.githubusercontent.com/wf021325/qx/master/task/wps.js, cronexpr={{{签到任务时间}}}, timeout=120, enable={{{启用签到任务}}}
+
+[MITM]
+hostname = %APPEND% *.wps.cn

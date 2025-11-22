@@ -1,0 +1,25 @@
+#!name=同程旅行签到任务
+#!desc=打开同程旅行 App 领福利页面自动获取 apptoken/device 并执行每日签到任务。
+#!openUrl=https://www.ly.com
+#!author=huskydsb[https://github.com/huskydsb]
+#!icon=https://www.eternityx.com/wp-content/uploads/2022/04/Tongcheng-Travel-%E5%90%8C%E7%A8%8B%E6%97%85%E8%A1%8C-Logo.png
+#!arguments=获取Cookie开关:true, 签到任务时间:0 8 * * *, 签到任务开关:true
+#!arguments-desc=\n★ 获取Cookie开关：是否启用同程旅行 Cookie 抓取（apptoken + device）\n★ 签到任务时间：Cron 表达式（默认每天 08:00）\n★ 签到任务开关：是否启用每日签到任务
+#!tag=签到脚本
+
+[Script]
+
+# ==========================
+# 获取同程 Cookie（apptoken + device）
+# ==========================
+
+同程旅行_获取Cookie = type=http-request, pattern=^https:\/\/app\.17u\.cn\/welfarecenter\/index\/signIndex$, script-path=https://raw.githubusercontent.com/huskydsb/Loon/main/Script/tccookie.js, requires-body=true, enable={{{获取Cookie开关}}}, timeout=60
+
+# ==========================
+# 同程旅行签到任务（主任务）
+# ==========================
+
+同程旅行_签到 = type=cron, script-path=https://raw.githubusercontent.com/huskydsb/Loon/main/Script/tc.js, cronexpr={{{签到任务时间}}}, timeout=120, enable={{{签到任务开关}}}
+
+[MITM]
+hostname = %APPEND% app.17u.cn

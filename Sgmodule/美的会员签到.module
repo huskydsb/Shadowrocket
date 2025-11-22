@@ -1,0 +1,25 @@
+#!name=美的会员签到任务
+#!desc=自动获取美的会员 Cookie 并定时执行签到任务。使用说明：\n1. 打开美的会员小程序，触发抓取 Cookie。\n2. 需开启 HTTPS 解密。\n3. 默认每天 9:09 自动签到。
+#!openUrl=https://mvip.midea.cn
+#!author=huskydsb[https://github.com/huskydsb]
+#!icon=https://raw.githubusercontent.com/Sliverkiss/QuantumultX/main/icon/Midea.png
+#!arguments=获取Cookie开关:true, 签到任务时间:9 9 * * *, 签到任务开关:true
+#!arguments-desc=\n★ 获取Cookie开关：是否启用自动抓取美的会员 Cookie\n★ 签到任务时间：Cron 表达式（默认每天 09:09）\n★ 签到任务开关：是否启用定时签到任务
+#!tag=签到任务
+
+[Script]
+
+# ==========================
+# 获取美的会员 Cookie
+# ==========================
+
+美的会员_获取Cookie = type=http-request, pattern=^https:\/\/mvip\.midea\.cn\/next\/mucuserinfo\/getmucuserinfo, script-path=https://raw.githubusercontent.com/huskydsb/Loon/refs/heads/main/Script/midea.js, requires-body=true, enable={{{获取Cookie开关}}}, timeout=10
+
+# ==========================
+# 美的会员签到任务
+# ==========================
+
+美的会员_签到 = type=cron, script-path=https://raw.githubusercontent.com/huskydsb/Loon/refs/heads/main/Script/midea.js, cronexpr={{{签到任务时间}}}, timeout=300, enable={{{签到任务开关}}}
+
+[MITM]
+hostname = %APPEND% mvip.midea.cn

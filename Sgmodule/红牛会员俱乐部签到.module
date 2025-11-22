@@ -1,0 +1,23 @@
+#!name=红牛会员俱乐部签到任务
+#!desc=自动获取红牛会员俱乐部 Token 并定时签到。
+#!openUrl=https://wxmall.maimall.com/redbull
+#!author=xzxxn777[https://github.com/xzxxn777]
+#!icon=https://raw.githubusercontent.com/sliverkiss/QuantumultX/main/icon/redbull.png
+#!arguments=获取Token开关:true, 签到任务时间:44 8,18 * * *, 红牛签到任务:true
+#!arguments-desc=\n★ 获取Token开关：是否启用拦截 Token\n★ 签到任务时间：Cron 表达式（默认每天 8:44 和 18:44）\n★ 红牛签到任务：是否启用定时签到任务
+#!tag=签到脚本
+
+[Script]
+
+# ==========================
+# 红牛俱乐部 - 获取 Token
+# ==========================
+红牛_获取Token = type=http-response, pattern=^https:\/\/xiaodian\.miyatech\.com\/api\/user\/login\/wx-jc, script-path=https://raw.githubusercontent.com/xzxxn777/Surge/main/Script/RedBull/RedBull.js, requires-body=true, enable={{{获取Token开关}}}, timeout=60, img-url=https://raw.githubusercontent.com/sliverkiss/QuantumultX/main/icon/redbull.png
+
+# ==========================
+# 红牛俱乐部 - 定时签到任务
+# ==========================
+红牛_签到 = type=cron, script-path=https://raw.githubusercontent.com/xzxxn777/Surge/main/Script/RedBull/RedBull.js, cronexpr={{{签到任务时间}}}, timeout=3600, enable={{{红牛签到任务}}}, wake-system=1, img-url=https://raw.githubusercontent.com/sliverkiss/QuantumultX/main/icon/redbull.png
+
+[MITM]
+hostname = %APPEND% xiaodian.miyatech.com

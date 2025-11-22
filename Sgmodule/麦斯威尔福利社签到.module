@@ -1,0 +1,25 @@
+#!name=麦斯威尔福利社签到任务
+#!desc=自动获取麦斯威尔福利社参数并执行签到脚本。使用说明：\n1. 打开麦斯威尔福利社页面以自动获取 Token。\n2. 支持定时签到（默认每天 11:11 与 18:11）。\n3. Token 获取成功后即可自动执行任务。
+#!openUrl=https://themaxwell.house
+#!author=xzxxn777[https://github.com/xzxxn777]
+#!icon=https://raw.githubusercontent.com/Xhy333/QuantumultX/main/icon/Mswer.png
+#!arguments=获取Token开关:true, 签到任务时间:11 11,18 * * *, 签到任务开关:true
+#!arguments-desc=\n★ 获取Token开关：是否自动拦截并保存麦斯威尔 Token\n★ 签到任务时间：Cron 表达式（默认每天11:11、18:11）\n★ 签到任务开关：是否启用定时签到任务
+#!tag=签到脚本
+
+[Script]
+
+# ==============================
+# 获取麦斯威尔 Token（Cookie）
+# ==============================
+
+麦斯威尔_获取Token = type=http-response, pattern=^https:\/\/jde\.mtbcpt\.com\/api\/JDEMaxwellApi\/QueryHomeInfo, script-path=https://raw.githubusercontent.com/xzxxn777/Surge/main/Script/MSWEFLS/MSWEFLS.js, requires-body=true, enable={{{获取Token开关}}}, timeout=60
+
+# ==============================
+# 麦斯威尔福利社签到任务
+# ==============================
+
+麦斯威尔_签到 = type=cron, script-path=https://raw.githubusercontent.com/xzxxn777/Surge/main/Script/MSWEFLS/MSWEFLS.js, cronexpr={{{签到任务时间}}}, timeout=3600, enable={{{签到任务开关}}}
+
+[MITM]
+hostname = %APPEND% jde.mtbcpt.com

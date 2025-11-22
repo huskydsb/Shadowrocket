@@ -1,0 +1,25 @@
+#!name=哈啰单车签到任务
+#!desc=自动获取哈啰单车参数并执行奖励金签到。配置后在哈啰单车客户端触发相应请求即可获取 token/参数。
+#!openUrl=https://www.hellobike.com
+#!author=Sliverkiss[https://github.com/Sliverkiss]
+#!icon=https://raw.githubusercontent.com/Sliverkiss/QuantumultX/main/icon/Hxek.png
+#!arguments=获取Token开关:true, 签到任务时间:0 8 * * *, 签到任务开关:true
+#!arguments-desc=\n★ 获取Token开关：拦截接口自动写入签到参数\n★ 签到任务时间：Cron 表达式（默认每天8:00）\n★ 签到任务开关：是否启用定时签到
+#!tag=签到脚本
+
+[Script]
+
+# ==========================
+# 获取哈啰单车 token/参数
+# ==========================
+
+哈啰单车_获取Token = type=http-request, pattern=^https:\/\/api\.hellobike\.com\/api\?user\.taurus\.pointInfo(?:\?.*)?$, script-path=https://gist.githubusercontent.com/Sliverkiss/4e0081f7b18a2cea9dbdf13545e60885/raw/d53857028ced29aed98affb5d4a602b2a8bf94cf/hldc.js, requires-body=true, enable={{{获取Token开关}}}, timeout=60
+
+# ==========================
+# 哈啰单车奖励金签到（主任务）
+# ==========================
+
+哈啰单车_奖励金签到 = type=cron, script-path=https://gist.githubusercontent.com/Sliverkiss/4e0081f7b18a2cea9dbdf13545e60885/raw/d53857028ced29aed98affb5d4a602b2a8bf94cf/hldc.js, cronexpr={{{签到任务时间}}}, timeout=120, enable={{{签到任务开关}}}
+
+[MITM]
+hostname = %APPEND% api.hellobike.com

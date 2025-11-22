@@ -1,0 +1,17 @@
+#!name=同程旅行签到任务
+#!desc=自动获取 apptoken/device 并执行每日签到任务（支持参数编辑）
+#!openUrl=https://www.ly.com
+#!arguments=启用Cookie抓取:true, 签到定时任务时间:0 8 * * *, 启用签到任务:true
+#!arguments-desc=\n★参数说明:\n\n - 启用Cookie抓取: 是否启用同程旅行 Cookie 抓取（apptoken + device）\n\n - 签到定时任务时间: Cron 格式（默认每天上午8点）\n\n - 启用签到任务: 定时运行同程旅行签到任务\n\n\n★提示:\n\n - Cookie 抓取：打开同程旅行 App 首页，触发任意签到活动，即可自动抓取。\n\n - Cron 表达式示例：每天早上8点 → `0 8 * * *`；每周一中午12点 → `0 12 * * 1`\n\n - 抓取成功后，自动保存 Cookie 信息，无需重复操作。
+
+[Script]
+
+# ===== 获取同程 Cookie（apptoken + device） =====
+同程获取Cookie = type=http-request, pattern=^https:\/\/app\.17u\.cn\/welfarecenter\/index\/signIndex, script-path=https://raw.githubusercontent.com/huskydsb/Loon/main/Script/tccookie.js, requires-body=true, enable={{{启用Cookie抓取}}},timeout=60
+
+# ===== 定时签到任务 =====
+同程签到任务 = type=cron, script-path=https://raw.githubusercontent.com/huskydsb/Loon/main/Script/tc.js, cronexpr={{{签到定时任务时间}}}, timeout=120, script-update-interval=0, enable={{{启用签到任务}}}
+
+[MITM]
+
+hostname = %APPEND% app.17u.cn

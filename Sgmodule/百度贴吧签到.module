@@ -1,0 +1,30 @@
+#!name=百度贴吧签到任务
+#!desc=自动签到百度贴吧，打开贴吧页面即可自动获取 Cookie，随后即可按计划定时签到。
+#!openUrl=https://tieba.baidu.com
+#!author=blackmatrix7[https://github.com/blackmatrix7]
+#!icon=https://raw.githubusercontent.com/huskydsb/icon/main/img/百度贴吧.png
+#!arguments=启用获取Cookie:true, 签到任务时间:0 10 * * *
+#!arguments-desc=\n★ 参数说明:\n\n - 启用获取Cookie：是否开启百度贴吧 Cookie 抓取（默认开启）\n\n - 签到任务时间：Cron 表达式（默认每天10:00）\n\n★ 获取方式：在贴吧 App 内刷新任意页面，会自动写入 Cookie
+#!tag=签到任务
+
+[Script]
+
+# ==========================
+# 百度贴吧 Cookie 获取（共4个 API）
+# ==========================
+
+贴吧_获取cookie1 = type=http-request, pattern=^https?:\/\/(c\.tieba\.baidu\.com|180\.97\.\d+\.\d+)\/c\/s\/login, script-path=https://gist.githubusercontent.com/blackmatrix7/cebabe7a385fc6a9ad32e2f7a35851dc/raw/1363d8720c92267d0a97fcd8eb98673760891fc9/tieba_min.js, enable={{{启用获取Cookie}}}
+
+贴吧_获取cookie2 = type=http-request, pattern=^https?:\/\/c\.tieba\.baidu\.com\/c\/s\/channelIconConfig, script-path=https://gist.githubusercontent.com/blackmatrix7/cebabe7a385fc6a9ad32e2f7a35851dc/raw/1363d8720c92267d0a97fcd8eb98673760891fc9/tieba_min.js, enable={{{启用获取Cookie}}}
+
+贴吧_获取cookie3 = type=http-request, pattern=^https?:\/\/tiebac\.baidu\.com\/c\/u\/follow\/getFoldedMessageUserInfo, script-path=https://gist.githubusercontent.com/blackmatrix7/cebabe7a385fc6a9ad32e2f7a35851dc/raw/1363d8720c92267d0a97fcd8eb98673760891fc9/tieba_min.js, enable={{{启用获取Cookie}}}
+
+贴吧_获取cookie4 = type=http-request, pattern=^https?:\/\/tiebac\.baidu\.com\/c\/s\/getClientConfig, script-path=https://gist.githubusercontent.com/blackmatrix7/cebabe7a385fc6a9ad32e2f7a35851dc/raw/1363d8720c92267d0a97fcd8eb98673760891fc9/tieba_min.js, enable={{{启用获取Cookie}}}
+
+# ==========================
+# 百度贴吧签到主任务
+# ==========================
+百度贴吧签到 = type=cron, script-path=https://gist.githubusercontent.com/blackmatrix7/cebabe7a385fc6a9ad32e2f7a35851dc/raw/1363d8720c92267d0a97fcd8eb98673760891fc9/tieba_min.js, cronexpr={{{签到任务时间}}}, timeout=60
+
+[MITM]
+hostname = %APPEND% c.tieba.baidu.com, tiebac.baidu.com

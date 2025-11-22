@@ -1,0 +1,22 @@
+#!name=嘉立创签到任务
+#!desc=打开嘉立创下单助手“我的”页面自动捕获 AccessToken，并执行每日签到任务（含金豆和第七天奖励领取）。
+#!openUrl=https://m.jlc.com
+#!icon=https://www.jlcgroup.cn/ssr/img/know_group_pic.a80459a.png
+#!tag=签到脚本
+#!arguments=获取Token开关:true, 签到任务时间:0 9 * * *, 嘉立创签到任务:true
+#!arguments-desc=\n★ 获取Token开关：是否启用自动捕获嘉立创 AccessToken\n★ 签到任务时间：Cron 表达式（默认每天 09:00）\n★ 嘉立创签到任务：是否启用定时签到任务
+
+[Script]
+
+# ==========================
+# 嘉立创 - 捕获 AccessToken
+# ==========================
+嘉立创_获取Token = type=http-request, pattern=^https:\/\/m\.jlc\.com\/api\/appPlatform\/center\/order\/setting\/list, script-path=https://raw.githubusercontent.com/huskydsb/Loon/main/Script/jlctoken.js, enable={{{获取Token开关}}}
+
+# ==========================
+# 嘉立创 - 定时签到任务
+# ==========================
+嘉立创_签到 = type=cron, script-path=https://raw.githubusercontent.com/huskydsb/Loon/main/Script/jlc.js, cronexpr={{{签到任务时间}}}, timeout=120, enable={{{嘉立创签到任务}}}
+
+[MITM]
+hostname = %APPEND% m.jlc.com

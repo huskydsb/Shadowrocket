@@ -1,0 +1,25 @@
+#!name=高德地图打车签到任务
+#!desc=自动签到高德地图打车并获取 Cookie，签到任务默认在每天凌晨 0:01 执行。
+#!openUrl=https://t.me/sliverkiss_blog
+#!author=wf021325[https://github.com/wf021325]
+#!icon=https://gitlab.com/lodepuly/iconlibrary/-/raw/main/App_icon/120px/Amap.png
+#!arguments=获取Cookie开关:true, 签到任务时间:1 0 * * *
+#!arguments-desc=\n★ 参数说明:\n\n - 获取Cookie开关：是否启用获取高德地图 Cookie 功能（默认开启）\n\n - 签到任务时间：Cron 表达式（默认每天0:01执行）\n\n★ 使用提示：启用后，请登录高德地图打车页面以自动写入 Cookie
+#!tag=签到脚本
+
+[Script]
+
+# ==========================
+# 高德地图 Cookie 获取
+# ==========================
+
+高德地图_获取Cookie = type=http-response, pattern=^https?:\/\/(m5(|-zb)|dache)\.amap\.com\/(ws\/yuece\/(act|openapi\/activity\/current)\/query|common\/(alipaymini|wxmini)\?_ENCRYPT=), script-path=https://raw.githubusercontent.com/wf021325/qx/master/task/ampDache.js, requires-body=true, enable={{{获取Cookie开关}}}, timeout=60
+
+# ==========================
+# 高德地图打车签到主任务
+# ==========================
+
+高德地图打车签到 = type=cron, script-path=https://raw.githubusercontent.com/wf021325/qx/master/task/ampDache.js, cronexpr={{{签到任务时间}}}, timeout=120
+
+[MITM]
+hostname = %APPEND% m5.amap.com, m5-zb.amap.com, dache.amap.com

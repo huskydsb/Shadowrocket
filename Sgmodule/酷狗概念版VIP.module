@@ -1,0 +1,31 @@
+#!name=酷狗概念版VIP任务
+#!desc=修复酷狗概念版解锁VIP功能，自动签到领取畅听VIP，支持去广告，在线听歌及下载支持hi-res/无损音质，VIP头像挂件。每日凌晨0点10分自动领取VIP。首次使用请打开酷狗概念版签到领VIP页面或登录活动网址以获取参数。
+#!openUrl=https://activity.kugou.com/getvips/v-4163b2d0/index.html
+#!author=Eric & Alex0510[https://github.com/Alex0510]
+#!icon=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/kugou.png
+#!arguments=获取Cookie开关:true, 签到任务时间:0 8 * * *, 签到任务开关:true, 去广告开关:true
+#!arguments-desc=\n★ 获取Cookie开关：启用后可自动抓取酷狗VIP授权参数\n★ 签到任务时间：Cron 表达式（默认每天08:00）\n★ 签到任务开关：是否启用每日签到任务\n★ 去广告开关：开启后自动屏蔽酷狗广告接口
+#!tag=VIP解锁
+
+[Script]
+
+# ==========================
+# 酷狗 Cookie 获取
+# ==========================
+
+酷狗VIP_获取Cookie = type=http-request, pattern=https:\/\/(gateway|gatewayretry|gateway3)\.kugou\.com\/youth\/v1\/activity\/get_month_vip_record.*, script-path=https://gist.githubusercontent.com/Alex0510/8b958bcf53ed1271e03bb5130b2206ec/raw/kugou_cookie.js, requires-body=false, enable={{{获取Cookie开关}}}, timeout=60
+
+# ==========================
+# 酷狗 VIP 定时签到
+# ==========================
+
+酷狗VIP_签到 = type=cron, script-path=https://gist.githubusercontent.com/Alex0510/8b958bcf53ed1271e03bb5130b2206ec/raw/kugou_vip.js, cronexpr={{{签到任务时间}}}, timeout=60, enable={{{签到任务开关}}}
+
+# ==========================
+# 酷狗去广告脚本
+# ==========================
+
+酷狗VIP_去广告 = type=http-response, pattern=(https?:\/\/)?.*\.kugou\.com\/((v1\/(get_union_vip|vipuser_sub|get_res_privilege)|mobile\/vipinfo|kugouvip\/v[12]\/batch_union_vipinfo)|pendant\/v2\/(set_user_pendan|get_pendant_list)).*, script-path=https://gist.githubusercontent.com/Alex0510/8b958bcf53ed1271e03bb5130b2206ec/raw/kugou_ad.js, requires-body=true, timeout=60, enable={{{去广告开关}}}
+
+[MITM]
+hostname = %APPEND% *.kugou.com

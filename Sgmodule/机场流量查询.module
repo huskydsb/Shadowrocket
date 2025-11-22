@@ -1,0 +1,9 @@
+#!name=机场流量查询
+#!desc=定时查询机场订阅链接的流量使用情况和到期时间（支持多地址 & 参数编辑）
+#!arguments=启用定时任务脚本:true, 流量定时查询时间:0 9 * * *, 机场订阅链接地址:https://example.com/link1&https://example.com/link2
+#!arguments-desc=\n★参数说明:\n\n - 启用定时任务脚本: 开（默认）, 关\n\n - 流量定时查询时间: 定时任务格式（cron），默认每天上午9点，例如 0 9 * * *\n\n - 机场订阅链接地址: 支持多个链接，以`&`分隔，例：https://sub1.com&https://sub2.com\n\n\n★使用提示：\n\n - 如果机场订阅地址中包含特殊符号（如`&`），请先确认是否需要 URL 编码。\n\n - 支持自定义定时任务，参考 crontab 格式：`分 时 日 月 周`\n\n   例如：每天8点 → `0 8 * * *`；每周一中午12点 → `0 12 * * 1`
+
+[Script]
+
+# 机场流量查询
+机场流量查询 = type=cron, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Scripts/subscribe.js, cronexpr={{{流量定时查询时间}}}, timeout=60, script-update-interval=0, argument=机场订阅链接={{{机场订阅链接地址}}}, enable={{{启用定时任务脚本}}}

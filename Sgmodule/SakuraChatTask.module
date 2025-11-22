@@ -1,0 +1,22 @@
+#!name=🌸Sakura樱花交流会
+#!desc=🌸Sakura樱花的奶茶多合一签到任务脚本\n1. 打开小程序收录任务或更新 token\n2. 手动完成一次签到以收录活动 ID
+#!openUrl=https://t.me/sliverkiss_blog
+#!author=Sliverkiss[https://github.com/Sliverkiss]
+#!icon=https://cdn-icons-png.flaticon.com/512/7096/7096433.png
+#!homepage=https://t.me/sliverkiss_blog
+#!arguments=启用Token获取:true, 签到任务时间:30 11 * * *, 启用签到任务:true
+#!arguments-desc=\n★参数说明:\n\n - 启用Token获取: 是否启用奶茶 Token 抓取功能（默认开启）\n\n - 签到任务时间: Cron 表达式（默认每天 11:30）\n\n - 启用签到任务: 是否启用定时签到逻辑\n\n\n★提示:\n\n - 打开小程序 → 自动收录活动任务或更新 token\n - 手动执行一次签到 → 自动收录活动 ID\n - Cron 示例：每天 11:30 → `30 11 * * *`；每周一 12:00 → `0 12 * * 1`
+
+[Script]
+
+# ===== 奶茶 Token 获取（http-response）=====
+樱花奶茶Token获取1 = type=http-response, pattern=^https:\/\/(webapi|webapi2)\.qmai\.cn\/web\/seller\/(oauth\/flash-sale-login|account\/login-minp), requires-body=true, script-path=https://gist.githubusercontent.com/Sliverkiss/8b4f5487e0f28786c7dec9c7484dcd5e/raw/teaMilk.js, enable={{{启用Token获取}}}, timeout=60
+
+# ===== 奶茶 Token 获取（http-request）=====
+樱花奶茶Token获取2 = type=http-request, pattern=^https:\/\/(webapi|webapi2|qmwebapi)\.qmai\.cn\/web\/(catering\/integral|cmk-center)\/sign\/(signIn|takePartInSign), requires-body=true, script-path=https://gist.githubusercontent.com/Sliverkiss/8b4f5487e0f28786c7dec9c7484dcd5e/raw/teaMilk.js, enable={{{启用Token获取}}}, timeout=60
+
+# ===== 奶茶签到任务 =====
+樱花奶茶签到 = type=cron, script-path=https://gist.githubusercontent.com/Sliverkiss/8b4f5487e0f28786c7dec9c7484dcd5e/raw/teaMilk.js, cronexpr={{{签到任务时间}}}, timeout=120, script-update-interval=0, enable={{{启用签到任务}}}
+
+[MITM]
+hostname = %APPEND% webapi2.qmai.cn, webapi.qmai.cn, qmwebapi.qmai.cn

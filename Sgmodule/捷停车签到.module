@@ -1,0 +1,21 @@
+#!name=捷停车签到任务
+#!desc=自动获取捷停车 userId 并定时签到。
+#!openUrl=https://sytgate.jslife.com.cn
+#!icon=https://android-artworks.25pp.com/fs08/2025/01/20/1/125_14ac3f62f146cf3f062e10bb5b2f8ca1_con.png
+#!tag=签到脚本
+#!arguments=获取userId开关:true, 签到任务时间:15 9 * * *, 捷停车签到任务:true
+#!arguments-desc=\n★ 获取userId开关：是否启用拦截接口获取捷停车 userId\n★ 签到任务时间：Cron 表达式（默认每天 09:15）\n★ 捷停车签到任务：是否启用定时签到任务
+
+[Script]
+
+# ==========================
+# 捷停车 - 捕获 userId
+# ==========================
+捷停车_获取userId = type=http-request, pattern=^https:\/\/sytgate\.jslife\.com\.cn\/core-gateway\/order\/carno\/pay\/info, script-path=https://raw.githubusercontent.com/FoKit/Scripts/main/scripts/jparking_sign.js, enable={{{获取userId开关}}}, requires-body=true, timeout=60
+
+# ==========================
+# 捷停车 - 定时签到任务
+# ==========================
+捷停车_签到 = type=cron, script-path=https://raw.githubusercontent.com/FoKit/Scripts/main/scripts/jparking_sign.js, cronexpr={{{签到任务时间}}}, timeout=60, enable={{{捷停车签到任务}}}
+[MITM]
+hostname = %APPEND% sytgate.jslife.com.cn

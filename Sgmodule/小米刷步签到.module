@@ -1,0 +1,20 @@
+#!name=小米刷步签到任务
+#!desc=小米运动刷步数自动签到，每天 8:33 执行任务。
+#!openUrl=https://account.xiaomi.com
+#!author=Yuheng0101[https://github.com/Yuheng0101]
+#!icon=https://raw.githubusercontent.com/Yuheng0101/X/main/Tasks/mi/color.png
+#!arguments=签到任务时间:33 8 * * *, 签到任务开关:true
+#!arguments-desc=\n★ 签到任务时间：Cron 表达式（默认每天 08:33）\n★ 签到任务开关：是否开启每日刷步任务
+#!tag=签到脚本
+#!homepage=https://github.com/Yuheng0101/X/tree/main/Tasks/mi
+
+[Script]
+
+# ==========================
+# 小米运动刷步数签到任务（主任务）
+# ==========================
+
+小米刷步_签到 = type=cron, script-path=https://raw.githubusercontent.com/Yuheng0101/X/main/Tasks/mi/step.js, cronexpr={{{签到任务时间}}}, timeout=120, enable={{{签到任务开关}}}
+
+[MITM]
+hostname = %APPEND% account.xiaomi.com

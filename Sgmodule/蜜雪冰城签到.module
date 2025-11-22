@@ -1,0 +1,25 @@
+#!name=蜜雪冰城签到任务
+#!desc=自动签到蜜雪冰城并获取 Token，需开启 HTTPS 解密。
+#!openUrl=
+#!author=Sliverkiss[https://github.com/Sliverkiss]
+#!icon=https://github.com/huskydsb/Loon/blob/main/icon/IMG_0167.jpeg?raw=true
+#!arguments=获取Token开关:true, 签到任务时间:0 */12 * * *, 签到任务开关:true
+#!arguments-desc=\n★ 获取Token开关：启用自动抓取蜜雪冰城 Token\n★ 签到任务时间：Cron 表达式（默认每 12 小时执行一次）\n★ 签到任务开关：是否启用蜜雪冰城签到任务
+#!tag=签到脚本
+
+[Script]
+
+# ==========================
+# 获取蜜雪冰城 Token
+# ==========================
+
+蜜雪冰城_获取Token = type=http-response, pattern=^https:\/\/mxsa\.mxbc\.net\/api\/v1\/customer\/info, script-path=https://gist.githubusercontent.com/Sliverkiss/865c82e42a5730bb696f6700ebb94cee/raw/mxbc.js, requires-body=true, enable={{{获取Token开关}}}, timeout=60
+
+# ==========================
+# 蜜雪冰城签到任务（主任务）
+# ==========================
+
+蜜雪冰城_签到 = type=cron, script-path=https://gist.githubusercontent.com/Sliverkiss/865c82e42a5730bb696f6700ebb94cee/raw/mxbc.js, cronexpr={{{签到任务时间}}}, timeout=60, enable={{{签到任务开关}}}
+
+[MITM]
+hostname = %APPEND% mxsa.mxbc.net

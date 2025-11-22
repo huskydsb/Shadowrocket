@@ -1,0 +1,25 @@
+#!name=奈雪的茶签到任务
+#!desc=打开小程序，点击我的，进入签到页面。获取 CK 后不要再打开小程序，避免 CK 失效。
+#!openUrl=https://www.naixue.com
+#!author=Sliverkiss[https://github.com/Sliverkiss]
+#!icon=https://raw.githubusercontent.com/sliverkiss/QuantumultX/main/icon/naixue.png
+#!arguments=获取Token开关:true, 签到任务时间:0 8 * * *, 签到任务开关:true
+#!arguments-desc=\n★ 获取Token开关：是否启用获取奈雪点单 token/CK 功能\n★ 签到任务时间：Cron 表达式（例如每天 08:00）\n★ 签到任务开关：是否启用奈雪的茶每日签到任务
+#!tag=签到脚本
+
+[Script]
+
+# ==========================
+# 获取奈雪 token/CK
+# ==========================
+
+奈雪_获取Token = type=http-request, pattern=^https:\/\/tm-web\.pin-dao\.cn\/user\/base-userinfo$, script-path=https://gist.githubusercontent.com/Sliverkiss/4d0e9572b99530b7cb0e7298622aa2a9/raw/naixue.js, requires-body=true, enable={{{获取Token开关}}}, timeout=60
+
+# ==========================
+# 奈雪签到任务（主任务）
+# ==========================
+
+奈雪_签到 = type=cron, script-path=https://gist.githubusercontent.com/Sliverkiss/4d0e9572b99530b7cb0e7298622aa2a9/raw/naixue.js, cronexpr={{{签到任务时间}}}, timeout=60, enable={{{签到任务开关}}}
+
+[MITM]
+hostname = %APPEND% tm-web.pin-dao.cn

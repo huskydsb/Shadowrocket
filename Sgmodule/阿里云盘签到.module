@@ -1,0 +1,18 @@
+#!name=阿里云盘签到任务
+#!desc=自动获取阿里云盘授权参数并执行签到。配置后登录阿里云盘或触发相关请求以自动获取 token/参数。
+#!openUrl=https://www.aliyundrive.com
+#!author=Sliverkiss[https://github.com/Sliverkiss]
+#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/AliYunDrive.png
+#!arguments=启用Token获取:true, 签到任务时间:0 8 * * *, 启用签到任务:true
+#!arguments-desc=\n★参数说明:\n\n - 启用Token获取: 是否启用拦截获取阿里云盘 token/授权信息（默认开启）\n\n - 签到任务时间: Cron 表达式（默认每天 08:00）\n\n - 启用签到任务: 是否启用阿里云盘每日签到任务（默认开启）\n\n\n★提示:\n\n - 登录阿里云盘 APP 或触发 /account/token 相关请求即可自动写入所需参数\n - Cron 示例：每天早8点 → `0 8 * * *`
+
+[Script]
+
+# ===== 获取阿里云盘 token/授权参数 =====
+阿里云盘获取Token = type=http-request, pattern=^https:\/\/(auth|aliyundrive)\.alipan\.com\/v2\/account\/token, requires-body=true, script-path=https://gist.githubusercontent.com/Sliverkiss/33800a98dcd029ba09f8b6fc6f0f5162/raw/aliyun.js, enable={{{启用Token获取}}}, timeout=60
+
+# ===== 阿里云盘签到任务 =====
+阿里云盘签到 = type=cron, script-path=https://gist.githubusercontent.com/Sliverkiss/33800a98dcd029ba09f8b6fc6f0f5162/raw/aliyun.js, cronexpr={{{签到任务时间}}}, timeout=120, enable={{{启用签到任务}}}
+
+[MITM]
+hostname = %APPEND% auth.alipan.com, auth.aliyundrive.com

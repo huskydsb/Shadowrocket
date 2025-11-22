@@ -1,0 +1,27 @@
+#!name=杜蕾斯会员中心签到任务
+#!desc=自动签到杜蕾斯会员中心，支持拦截获取 Cookie 与定时签到任务。首次使用请登录一次 APP 或页面以自动捕获授权参数。
+#!openUrl=https://vip.ixiliu.cn
+#!author=axtyet/czy13724[https://github.com/axtyet]
+#!icon=https://raw.githubusercontent.com/huskydsb/icon/main/img/Durex官方APP旗艦店.png
+#!arguments=获取Cookie开关:true, 签到任务时间:0 8 * * *
+#!arguments-desc=\n★ 参数说明:\n\n- 获取Cookie开关：拦截登录接口获取 Cookie（默认开启）\n\n- 签到任务时间：Cron 表达式（默认每天 08:00）\n\n★ 使用提示：启用 HTTPS 解密后，登录一次杜蕾斯小程序/APP 页面即可自动写入 Cookie
+#!tag=签到脚本
+
+[Script]
+
+# ==========================
+# 杜蕾斯 Cookie / 参数获取
+# ==========================
+
+杜蕾斯_获取Cookie = type=http-request, pattern=^https:\/\/vip\.ixiliu\.cn\/mp\/user\/info$, script-path=https://raw.githubusercontent.com/axtyet/Quan-X/main/cyz_13724/scripts/dls.js, requires-body=true, enable={{{获取Cookie开关}}}, timeout=60
+
+杜蕾斯_拦截签到Body = type=http-request, pattern=^https:\/\/vip\.ixiliu\.cn\/mp\/sign\/applyV2$, script-path=https://raw.githubusercontent.com/axtyet/Quan-X/main/cyz_13724/scripts/dls.js, requires-body=true, enable={{{获取Cookie开关}}}, timeout=60
+
+# ==========================
+# 杜蕾斯签到定时任务
+# ==========================
+
+杜蕾斯会员中心签到 = type=cron, script-path=https://raw.githubusercontent.com/axtyet/Quan-X/main/cyz_13724/scripts/dls.js, cronexpr={{{签到任务时间}}}, timeout=120
+
+[MITM]
+hostname = %APPEND% vip.ixiliu.cn

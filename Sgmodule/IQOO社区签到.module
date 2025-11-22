@@ -1,0 +1,18 @@
+#!name=IQOO社区签到任务
+#!desc=IQOO社区每日任务（签到、成长值等），打开小程序点击“我的”进入签到页面以获取 token。获取后尽量避免频繁进入避免 CK 失效。
+#!openUrl=https://bbs.iqoo.com
+#!author=Sliverkiss[https://github.com/Sliverkiss]
+#!icon=https://raw.githubusercontent.com/czy13724/LeviIcons/main/leviicons/iqooc.png
+#!arguments=启用Token获取:true, 签到任务时间:0 8 * * *, 启用签到任务:true
+#!arguments-desc=\n★参数说明:\n\n - 启用Token获取: 是否启用 IQOO token/参数拦截获取（默认开启）\n\n - 签到任务时间: Cron 表达式（默认每天上午8点）\n\n - 启用签到任务: 是否启用定时签到逻辑\n\n\n★提示:\n\n - 获取Token：打开 IQOO 小程序 → 点击“我的” → 自动抓取关键参数。\n - 获取成功后可关闭抓取开关防止重复运行。\n - Cron 示例：每天8点 → `0 8 * * *`；每周一12点 → `0 12 * * 1`
+
+[Script]
+
+# ===== 获取 IQOO Token（拦截用户信息） =====
+IQOO获取Token = type=http-response, pattern=^https:\/\/bbs-api\.iqoo\.com\/api\/v3\/user\?userId=, requires-body=true, script-path=https://gist.githubusercontent.com/Sliverkiss/bfc5527ad3ea8ac7b0820ca442442452/raw/iqoo.js, enable={{{启用Token获取}}}, timeout=60
+
+# ===== IQOO 社区签到任务 =====
+IQOO签到 = type=cron, script-path=https://gist.githubusercontent.com/Sliverkiss/bfc5527ad3ea8ac7b0820ca442442452/raw/iqoo.js, cronexpr={{{签到任务时间}}}, timeout=120, script-update-interval=0, enable={{{启用签到任务}}}
+
+[MITM]
+hostname = %APPEND% bbs-api.iqoo.com

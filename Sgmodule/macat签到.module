@@ -1,0 +1,15 @@
+#!name=Macat签到任务
+#!desc=自动执行Macat每日签到任务。macat_loginBody" (boxjs自行填入,包含账号密码信息等)格式: `action=user_login&username=xxx%40gmail.com&password=xxx&rememberme=1`
+#!openUrl=https://www.macat.vip
+#!author=MCdasheng[https://github.com/MCdasheng]
+#!icon=https://raw.githubusercontent.com/Orz-3/mini/master/Color/Skicat.png
+#!arguments=签到任务时间:0 8 * * *, 启用签到任务:true
+#!arguments-desc=\n★参数说明:\n\n - 签到任务时间: Cron 表达式（默认每天上午8点）\n\n - 启用签到任务: 是否启用定时签到逻辑\n\n\n★提示:\n\n - 格式 `action=user_login&username=xxx%40gmail.com&password=xxx&rememberme=1`。请替换为实际账号密码信息\n - Cron 示例：每天8点 → `0 8 * * *`；每周一12点 → `0 12 * * 1`
+
+[Script]
+
+# ===== 定时签到任务 =====
+Macat签到 = type=cron, script-path=https://raw.githubusercontent.com/MCdasheng/QuantumultX/main/Scripts/myScripts/macat.js, cronexpr={{{签到任务时间}}}, timeout=60, script-update-interval=0, enable={{{启用签到任务}}}
+
+[MITM]
+hostname = %APPEND% www.macat.vip

@@ -1,0 +1,25 @@
+#!name=美团买菜签到任务
+#!desc=自动获取美团买菜签到参数并定时签到。配置后进入美团买菜/商城页面即可自动抓取参数。
+#!openUrl=https://mall.meituan.com
+#!author=JoJoJotarou[https://github.com/JoJoJotarou], chavyleung[https://github.com/chavyleung]
+#!icon=https://qxnav.com/rules/QuantumultX/img/meituan.png
+#!arguments=获取Token开关:true, 签到任务时间:0 6,8 * * *, 签到任务开关:true
+#!arguments-desc=\n★ 获取Token开关：是否启用自动抓取美团买菜参数\n★ 签到任务时间：Cron 表达式（默认每天 6:00 和 8:00）\n★ 签到任务开关：是否启用美团买菜签到任务
+#!tag=签到脚本
+
+[Script]
+
+# ==========================
+# 获取美团买菜 Token/参数
+# ==========================
+
+美团买菜_获取Token = type=http-request, pattern=^https?:\/\/mall\.meituan\.com\/api\/c\/mallcoin\/checkIn\/queryTaskListInfoV.\?, script-path=https://raw.githubusercontent.com/JoJoJotarou/myScript/master/script/meituan/mall.meituan.cookie.js, requires-body=false, enable={{{获取Token开关}}}, timeout=60
+
+# ==========================
+# 美团买菜签到任务（主任务）
+# ==========================
+
+美团买菜_签到 = type=cron, script-path=https://raw.githubusercontent.com/JoJoJotarou/myScript/master/script/meituan/mall.meituan.mallcoin.task.js, cronexpr={{{签到任务时间}}}, timeout=120, enable={{{签到任务开关}}}
+
+[MITM]
+hostname = %APPEND% mall.meituan.com
