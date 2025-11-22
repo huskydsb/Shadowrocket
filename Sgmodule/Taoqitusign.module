@@ -1,3 +1,4 @@
+#!url=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Sgmodule/Taoqitusign.module
 #!name=淘气兔签到任务
 #!desc=自动获取 Cookie 并在每天晚上 22:00 执行签到
 #!openUrl=https://vip.taoqitu.pro/
@@ -9,10 +10,10 @@
 [Script]
 
 # ===== 获取淘气兔 Cookie =====
-淘气兔获取Cookie = type=http-request, pattern=^https:\/\/api-cdn\.taoqitu\.me\/gateway\/tqt\/cn\/user\/comm\/config$, requires-body=true, script-path=https://raw.githubusercontent.com/huskydsb/Loon/refs/heads/main/Script/taoqitugetcookie.js, enable={{{启用Cookie获取}}}, timeout=60
+淘气兔获取Cookie = type=http-request, pattern= ^https?:\/\/gtm-1003\.91tutu\.xyz\/?.*$, requires-body=true, script-path=https://raw.githubusercontent.com/huskydsb/Loon/refs/heads/main/Script/taoqitugetcookie.js, enable={{{启用Cookie获取}}}, timeout=60
 
 # ===== 淘气兔签到任务 =====
 淘气兔签到 = type=cron, script-path=https://raw.githubusercontent.com/huskydsb/Loon/refs/heads/main/Script/taoqitusign.js, cronexpr={{{签到任务时间}}}, timeout=60, enable={{{启用签到任务}}}
 
 [MITM]
-hostname = %APPEND% api-cdn.taoqitu.me
+hostname = %APPEND% gtm-1003.91tutu.xyz
