@@ -13,7 +13,7 @@
 # 获取奈雪 token/CK
 # ==========================
 
-奈雪_获取Token = type=http-request, pattern=^https:\/\/tm-web\.pin-dao\.cn\/home\/api\/config\/user$, script-path=https://gist.githubusercontent.com/Sliverkiss/4d0e9572b99530b7cb0e7298622aa2a9/raw/naixue.js, requires-body=true, enable={{{获取Token开关}}}, timeout=60
+奈雪_获取Token = type=http-request, pattern=^https:\/\/tm-api\.pin-dao\.cn\/home\/api\/config\/user$, script-path=https://gist.githubusercontent.com/Sliverkiss/4d0e9572b99530b7cb0e7298622aa2a9/raw/naixue.js, requires-body=true, enable={{{获取Token开关}}}, timeout=60
 
 # ==========================
 # 奈雪签到任务（主任务）
