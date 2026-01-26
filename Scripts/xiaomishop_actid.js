@@ -1,12 +1,12 @@
 /*
 🛒 小米商城 actId / sign 获取脚本（http-response）
-作用：从 /mtop/navi/venue/page 响应体中提取 sign 和 actId 并持久化
+作用：从 /mtop/navi/venue/batch 响应体中提取 sign 和 actId 并持久化
 */
 
 const url = $request.url;
 const body = $response.body;
 
-if (!url.includes("/mtop/navi/venue/page") || !body) {
+if (!url.includes("/mtop/navi/venue/batch") || !body) {
     $done();
 }
 
@@ -14,7 +14,9 @@ try {
     const data = JSON.parse(body);
 
     // 查找 query_list 中 resolver = "infinite-task"
-    let query = data?.data?.floors?.flatMap(f => f.query_list || [])?.find(q => q.resolver === "infinite-task");
+    let query = data?.data?.result_list?.[0]?.components
+                  ?.flatMap(c => c.query_list || [])
+                  ?.find(q => q.resolver === "infinite-task");
 
     if (!query) {
         console.log("❌ 未找到 infinite-task query_list");
