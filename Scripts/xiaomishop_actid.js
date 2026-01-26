@@ -1,57 +1,36 @@
 /*
-📌 小米商城 actId & sign 获取脚本（http-response）
-来源接口：
-/mtop/navi/venue/page?page_id=13880&pdl=mishop
-功能：
-1. 抓取最新 actId 和 sign
-2. 保存到 $persistentStore（MI_ACT_ID、MI_SIGN）
+📌 小米商城 serviceToken 获取脚本（http-request）
+说明：
+1. 拦截 page 接口请求
+2. 从请求头 Cookie 中获取 serviceToken
+3. 保存到 $persistentStore
 */
 
 const url = $request.url;
-const body = $response.body;
+const headers = $request.headers;
 
-// 只处理 page 接口返回
-if (!url.includes("/mtop/navi/venue/page") || !body) {
+// 只处理 page 接口
+if (!url.includes("/mtop/navi/venue/page") || !headers) {
   $done();
 }
 
 try {
-  const data = JSON.parse(body);
-  const floors = data?.data?.floors || [];
-
-  // 查找任务模块 mi_task_floor
-  const taskFloor = floors.find(f => f.module_key === "mi_task_floor");
-  if (!taskFloor) {
-    console.log("⚠️ 未找到任务模块");
-    $done();
-  }
-
-  // 查找 query_list 中 resolver 为 infinite-task 的对象
-  const query = (taskFloor.query_list || []).find(q => q.resolver === "infinite-task");
-  if (!query) {
-    console.log("⚠️ 未找到签到参数（sign）");
-    $done();
-  }
-
-  // 从 parameter 中提取 actId
-  const paramObj = JSON.parse(query.parameter || "{}");
-  const actId = paramObj.actId;
-  const sign = query.sign;
-
-  if (actId && sign) {
-    $persistentStore.write(actId, "MI_ACT_ID");
-    $persistentStore.write(sign, "MI_SIGN");
-
+  const cookie = headers["Cookie"] || headers["cookie"] || "";
+  const match = cookie.match(/serviceToken=([^;]+)/);
+  if (match && match[1]) {
+    const serviceToken = match[1];
+    $persistentStore.write(serviceToken, "MI_SERVICE_TOKEN");
     $notification.post(
-      "🛒 小米商城 actId & sign 获取成功",
+      "🛒 小米商城 serviceToken 获取成功",
       "",
-      `actId: ${actId}\nsign: ${sign}`
+      serviceToken
     );
-    console.log("✅ 获取成功:", `actId=${actId}, sign=${sign}`);
+    console.log("✅ serviceToken:", serviceToken);
+  } else {
+    console.log("⚠️ 未匹配到 serviceToken");
   }
-
 } catch (e) {
-  console.log("❌ actId & sign 获取异常:", e);
+  console.log("❌ 获取 serviceToken 异常:", e);
 }
 
 $done();
