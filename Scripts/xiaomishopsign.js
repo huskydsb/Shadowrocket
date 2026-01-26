@@ -8,7 +8,7 @@ MI_ACT_ID
 
 const SERVICE_TOKEN = $persistentStore.read("MI_SERVICE_TOKEN");
 const SIGN = $persistentStore.read("MI_SIGN");
-const ACT_ID = $persistentStore.read("MI_ACT_ID") || "6706c0695404a23dfb5b2cab";
+const ACT_ID = $persistentStore.read("MI_ACT_ID");
 
 if (!SERVICE_TOKEN || !SIGN) {
   $notification.post(
