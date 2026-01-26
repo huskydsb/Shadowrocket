@@ -3,30 +3,29 @@
 抓取：
 - serviceToken（Cookie）
 - sign（URL / body）
-- actId（infinite/do）
+- actId（usercenter/personalHome 响应体）
 */
 
 const url = $request.url;
 const headers = $request.headers || {};
-const body = $request.body || "";
+const body = $response?.body || $request.body || "";
 
-// ========= 1️⃣ 抓 serviceToken =========
+// ========= 1️⃣ serviceToken =========
 const cookie = headers.Cookie || headers.cookie || "";
 const tokenMatch = cookie.match(/serviceToken=([^;]+)/);
 if (tokenMatch) {
   $persistentStore.write(tokenMatch[1], "MI_SERVICE_TOKEN");
 }
 
-// ========= 2️⃣ 抓 sign（URL 优先） =========
+// ========= 2️⃣ sign（URL / body） =========
 try {
   if (url.includes("/mtop/navi/venue/batch")) {
-    const urlObj = new URL(url);
-    const sign = urlObj.searchParams.get("sign");
+    const u = new URL(url);
+    const signFromUrl = u.searchParams.get("sign");
 
-    if (sign) {
-      $persistentStore.write(sign, "MI_SIGN");
+    if (signFromUrl) {
+      $persistentStore.write(signFromUrl, "MI_SIGN");
     } else if (body) {
-      // 兼容旧版 body 里有 sign
       const data = JSON.parse(body);
       const ql = data?.query_list?.[0];
       if (ql?.sign) {
@@ -34,18 +33,30 @@ try {
       }
     }
   }
-} catch (e) {}
+} catch (_) {}
 
-// ========= 3️⃣ 抓 actId =========
+// ========= 3️⃣ actId（最终来源） =========
 try {
-  if (url.includes("/mtop/mf/act/infinite/do") && body) {
+  if (url.includes("/mtop/mf/usercenter/personalHome") && body) {
     const data = JSON.parse(body);
-    const actId = data?.[1]?.actId;
+
+    // 深度遍历查找 actId
+    const findActId = (obj) => {
+      if (!obj || typeof obj !== "object") return null;
+      if (obj.actId) return obj.actId;
+      for (const k in obj) {
+        const res = findActId(obj[k]);
+        if (res) return res;
+      }
+      return null;
+    };
+
+    const actId = findActId(data);
     if (actId) {
       $persistentStore.write(actId, "MI_ACT_ID");
     }
   }
-} catch (e) {}
+} catch (_) {}
 
 // ========= 通知 =========
 const st = $persistentStore.read("MI_SERVICE_TOKEN");
