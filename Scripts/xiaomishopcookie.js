@@ -1,51 +1,36 @@
 /*
-📌 小米商城参数获取脚本（http-request）
-功能：
-- 获取 serviceToken（Cookie）
-- 获取 sign（venue/batch URL / body）
+📌 小米商城 serviceToken 获取脚本（http-request）
+说明：
+1. 拦截 page 接口请求
+2. 从请求头 Cookie 中获取 serviceToken
+3. 保存到 $persistentStore
 */
 
 const url = $request.url;
-const headers = $request.headers || {};
-const body = $request.body || "";
+const headers = $request.headers;
 
-// ========= 1️⃣ serviceToken =========
-const cookie = headers.Cookie || headers.cookie || "";
-const tokenMatch = cookie.match(/serviceToken=([^;]+)/);
-if (tokenMatch) {
-  $persistentStore.write(tokenMatch[1], "MI_SERVICE_TOKEN");
+// 只处理 page 接口
+if (!url.includes("/mtop/navi/venue/page") || !headers) {
+  $done();
 }
 
-// ========= 2️⃣ sign =========
 try {
-  if (url.includes("/mtop/navi/venue/batch")) {
-    // iOS：sign 在 URL
-    const u = new URL(url);
-    const signFromUrl = u.searchParams.get("sign");
-    if (signFromUrl) {
-      $persistentStore.write(signFromUrl, "MI_SIGN");
-    } else if (body) {
-      // 兼容旧版：sign 在 body
-      const data = JSON.parse(body);
-      const ql = data?.query_list?.[0];
-      if (ql?.sign) {
-        $persistentStore.write(ql.sign, "MI_SIGN");
-      }
-    }
+  const cookie = headers["Cookie"] || headers["cookie"] || "";
+  const match = cookie.match(/serviceToken=([^;]+)/);
+  if (match && match[1]) {
+    const serviceToken = match[1];
+    $persistentStore.write(serviceToken, "MI_SERVICE_TOKEN");
+    $notification.post(
+      "🛒 小米商城 serviceToken 获取成功",
+      "",
+      serviceToken
+    );
+    console.log("✅ serviceToken:", serviceToken);
+  } else {
+    console.log("⚠️ 未匹配到 serviceToken");
   }
-} catch (_) {}
-
-// ========= 通知（只要抓到就提示） =========
-const st = $persistentStore.read("MI_SERVICE_TOKEN");
-const sign = $persistentStore.read("MI_SIGN");
-
-if (st || sign) {
-  $notification.post(
-    "🛒 小米商城参数获取",
-    "",
-    `serviceToken: ${st ? "✅" : "❌"}\n` +
-    `sign: ${sign ? "✅" : "❌"}`
-  );
+} catch (e) {
+  console.log("❌ 获取 serviceToken 异常:", e);
 }
 
 $done();
