@@ -1,70 +1,39 @@
-/*************************************
- * 小米商城 actId / sign 获取
- * 触发接口：
- * /mtop/navi/venue/batch
- *************************************/
+/*
+🛒 小米商城 actId / sign 获取脚本（http-response）
+作用：从 /mtop/navi/venue/page 响应体中提取 sign 和 actId 并持久化
+*/
 
+const url = $request.url;
 const body = $response.body;
 
-if (!body) {
-  $done();
+if (!url.includes("/mtop/navi/venue/page") || !body) {
+    $done();
 }
 
-let obj;
 try {
-  obj = JSON.parse(body);
-} catch (e) {
-  console.log("❌ JSON 解析失败");
-  $done();
-}
+    const data = JSON.parse(body);
 
-let queryList =
-  obj?.data?.query_list ||
-  obj?.query_list ||
-  [];
+    // 查找 query_list 中 resolver = "infinite-task"
+    let query = data?.data?.floors?.flatMap(f => f.query_list || [])?.find(q => q.resolver === "infinite-task");
 
-if (!Array.isArray(queryList)) {
-  console.log("❌ 未找到 query_list");
-  $done();
-}
-
-let actId = "";
-let sign = "";
-
-for (let item of queryList) {
-  if (item.resolver === "infinite-task") {
-    sign = item.sign || "";
-
-    if (item.parameter) {
-      try {
-        const paramObj = JSON.parse(item.parameter);
-        actId = paramObj.actId || "";
-      } catch (e) {}
+    if (!query) {
+        console.log("❌ 未找到 infinite-task query_list");
+        $done();
     }
-    break;
-  }
+
+    const actId = JSON.parse(query.parameter).actId;
+    const sign = query.sign;
+
+    if (actId && sign) {
+        $persistentStore.write(actId, "MI_ACT_ID");
+        $persistentStore.write(sign, "MI_SIGN");
+        $notification.post("🛒 小米商城 actId / sign 获取成功", "", `actId: ${actId}\nsign: ${sign}`);
+        console.log("✅ actId:", actId, "sign:", sign);
+    } else {
+        console.log("❌ actId 或 sign 获取失败");
+    }
+} catch(e) {
+    console.log("❌ 解析异常:", e);
 }
-
-if (!actId) {
-  console.log("❌ actId 未获取到");
-  $done();
-}
-
-// ===== 持久化存储 =====
-$persistentStore.write(actId, "xm_actId");
-if (sign) {
-  $persistentStore.write(sign, "xm_taskSign");
-}
-
-// ===== 日志 =====
-console.log(`✅ 获取成功`);
-console.log(`actId: ${actId}`);
-console.log(`sign: ${sign}`);
-
-$notification.post(
-  "小米商城",
-  "actId 获取成功",
-  `actId: ${actId}`
-);
 
 $done();
