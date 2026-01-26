@@ -10,7 +10,8 @@
 小米商城获取参数 = type=http-request, pattern=^https:\/\/shop-api\.retail\.mi\.com\/mtop\/.*, requires-body=true, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Scripts/xiaomishopcookie.js, enable={{{启用参数获取}}}, timeout=30
 
 # ===== 获取小米商城 actId（仅 response 中存在）=====
-小米商城获取actId = type=http-response, pattern=^https:\/\/shop-api\.retail\.mi\.com\/mtop\/mf\/usercenter\/personalHome, requires-body=true, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Scripts/xiaomishop_actid.js, enable={{{启用参数获取}}}, timeout=30
+小米商城获取actId = type=http-response, pattern=^https?:\/\/shop-api\.retail\.mi\.com\/mtop\/navi\/venue\/page\?page_id=\d+&pdl=mishop
+, requires-body=true, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Scripts/xiaomishop_actid.js, enable={{{启用参数获取}}}, timeout=30
 
 # ===== 小米商城签到任务 =====
 小米商城签到 = type=cron, script-path=https://raw.githubusercontent.com/huskydsb/Shadowrocket/main/Scripts/xiaomishopsign.js, cronexpr={{{签到任务时间}}}, timeout=120, enable={{{启用签到任务}}}
