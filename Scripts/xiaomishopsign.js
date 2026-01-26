@@ -1,110 +1,153 @@
-/*
-🛒 小米商城任务签到脚本
-依赖参数：
-MI_SERVICE_TOKEN, MI_SIGN, MI_ACT_ID
-*/
+/******************************
+ * 小米商城任务 - Shadowrocket
+ * 仅读取持久化存储 MI_SERVICE_TOKEN
+ ******************************/
 
-const SERVICE_TOKEN = $persistentStore.read("MI_SERVICE_TOKEN");
-if (!SERVICE_TOKEN) {
-  $notification.post("🛒 小米商城任务", "缺少 serviceToken", "请先运行抓包脚本获取参数");
+const ACT_ID = "6706c0695404a23dfb5b2cab";
+const SIGN = "ff8960139490adb9071ed47a34f179ff";
+
+const serviceToken = $persistentStore.read("MI_SERVICE_TOKEN");
+
+if (!serviceToken) {
+  $notification.post(
+    "小米商城任务",
+    "未找到 MI_SERVICE_TOKEN",
+    "请先写入持久化存储"
+  );
   $done();
 }
 
-const HEADERS = {
-  "x-user-agent": "channel/mishop platform/mishop.ios",
-  "Content-Type": "application/json",
+const headers = {
   "User-Agent": "okhttp/3.12.3",
-  "Cookie": `serviceToken=${SERVICE_TOKEN};`
+  "Content-Type": "application/json",
+  "x-user-agent": "channel/mishop platform/mishop.android",
+  "Cookie": `serviceToken=${serviceToken};`
 };
 
-function get(url) {
-  return new Promise((resolve, reject) => {
-    $httpClient.get({ url, headers: HEADERS }, (err, resp, data) => {
-      if (err) reject(err);
-      else {
-        try { resolve(JSON.parse(data)); } 
-        catch(e){ reject("JSON解析失败: " + data); }
-      }
-    });
-  });
-}
-
+/**
+ * HTTP POST Promise 封装
+ */
 function post(url, body) {
   return new Promise((resolve, reject) => {
-    $httpClient.post({ url, headers: HEADERS, body: JSON.stringify(body) }, (err, resp, data) => {
-      if (err) reject(err);
-      else {
-        try { resolve(JSON.parse(data)); }
-        catch(e){ reject("JSON解析失败: " + data); }
+    $httpClient.post(
+      { url, headers, body: JSON.stringify(body) },
+      (err, resp, data) => {
+        if (err) reject(err);
+        else resolve(JSON.parse(data));
       }
-    });
+    );
   });
 }
 
+/**
+ * 获取任务列表
+ */
 async function getTasks() {
-  console.log("🚀 获取任务列表...");
-  const url = `https://shop-api.retail.mi.com/mtop/navi/venue/page?page_id=13880&pdl=mishop&_r=${Date.now()}`;
-  const res = await get(url);
-  if (res.code !== 0) throw `获取任务失败: ${res.message}`;
+  const url =
+    "https://shop-api.retail.mi.com/mtop/navi/venue/batch?page_id=13880&pdl=mishop";
 
-  const taskFloor = res?.data?.floors?.find(f => f.module_key === "mi_task_floor");
-  if (!taskFloor) throw "未找到任务楼层";
+  const body = {
+    query_list: [
+      {
+        resolver: "infinite-task",
+        sign: SIGN,
+        parameter: `{"actId":"${ACT_ID}","taskTypeList":[101,200,110,201,202]}`,
+        variable: {}
+      }
+    ]
+  };
 
-  const query = taskFloor.query_list?.[0];
-  if (!query) throw "未找到 query_list";
+  const res = await post(url, body);
+  if (res.message !== "ok") throw "获取任务失败";
 
-  const actId = JSON.parse(query.parameter).actId;
-  const sign = query.sign;
-  const tasks = taskFloor.data?.actIdList || [];
+  const comps =
+    res.data.result_list[0]?.components || [];
 
-  console.log("➡️ actId:", actId, "sign:", sign, "任务数量:", tasks.length);
-
-  return { actId, sign, tasks };
+  return comps
+    .filter(c => c.canDo !== false)
+    .map(c => ({
+      id: c.taskId,
+      name: c.taskName,
+      type: Number(c.taskType)
+    }));
 }
 
-async function getTaskToken(taskId, actId) {
-  const url = "https://shop-api.retail.mi.com/mtop/mf/act/infinite/do";
-  const body = [{}, { taskId, actId }];
+/**
+ * 获取 taskToken
+ */
+async function getTaskToken(taskId) {
+  const url =
+    "https://shop-api.retail.mi.com/mtop/mf/act/infinite/do";
+
+  const body = [{}, { taskId, actId: ACT_ID }];
   const res = await post(url, body);
   return res?.data?.taskToken || null;
 }
 
-async function doTask(token, actId, taskType, taskName) {
-  const url = "https://shop-api.retail.mi.com/mtop/mf/act/infinite/done";
-  const body = [{}, { taskToken: token, actId, taskType }];
+/**
+ * 完成任务
+ */
+async function finishTask(token, type) {
+  const url =
+    "https://shop-api.retail.mi.com/mtop/mf/act/infinite/done";
+
+  const body = [{}, { taskToken: token, actId: ACT_ID, taskType: type }];
   return await post(url, body);
 }
 
+/**
+ * 主流程
+ */
 (async () => {
+  let log = [];
   try {
-    const { actId, tasks } = await getTasks();
-    let logs = [], success = 0;
+    const tasks = await getTasks();
 
     for (const t of tasks) {
-      const { taskId, taskName, type: taskType, disabled } = t;
-      if (disabled) { logs.push(`⏭️ 跳过禁用任务: ${taskName}`); continue; }
+      if (t.type === 201) {
+        log.push(`${t.name}：跳过（需支付）`);
+        continue;
+      }
 
-      console.log(`🔹 执行任务: ${taskName} (${taskType})`);
-      const token = await getTaskToken(taskId, actId);
-      if (!token) { logs.push(`❌ ${taskName} token获取失败`); continue; }
+      const token = await getTaskToken(t.id);
+      if (!token) {
+        log.push(`${t.name}：获取 token 失败`);
+        continue;
+      }
 
-      if (taskType === 200) await new Promise(r => setTimeout(r, 3000));
+      if (t.type === 200) {
+        await new Promise(r => setTimeout(r, 3000));
+      }
 
-      const res = await doTask(token, actId, taskType, taskName);
-      if (res.success) {
-        success++;
-        const award = res?.data?.awardList?.[0];
-        logs.push(award ? `✅ ${taskName} +${award.awardValue}${award.awardName}` : `✅ ${taskName} 完成`);
+      const res = await finishTask(token, t.type);
+      if (!res.success) {
+        log.push(`${t.name}：失败`);
       } else {
-        logs.push(`❌ ${taskName} 执行失败: ${res?.message || "未知错误"}`);
+        const award = res.data?.awardList?.[0];
+        if (award) {
+          log.push(
+            `${t.name}：${award.awardValue}${award.awardName}`
+          );
+        } else {
+          log.push(`${t.name}：完成`);
+        }
       }
 
       await new Promise(r => setTimeout(r, 1000));
     }
 
-    $notification.post("🛒 小米商城任务完成", `成功 ${success} 个`, logs.join("\n"));
-  } catch(e) {
-    $notification.post("🛒 小米商城任务异常", "", String(e));
+    $notification.post(
+      "🛒 小米商城任务",
+      "执行完成",
+      log.join("\n")
+    );
+  } catch (e) {
+    $notification.post(
+      "小米商城任务",
+      "执行异常",
+      String(e)
+    );
   }
+
   $done();
 })();
