@@ -1,14 +1,13 @@
 /*
-📌 小米商城参数抓取脚本
-抓取：
-- serviceToken（Cookie）
-- sign（URL / body）
-- actId（usercenter/personalHome 响应体）
+📌 小米商城参数获取脚本（http-request）
+功能：
+- 获取 serviceToken（Cookie）
+- 获取 sign（venue/batch URL / body）
 */
 
 const url = $request.url;
 const headers = $request.headers || {};
-const body = $response?.body || $request.body || "";
+const body = $request.body || "";
 
 // ========= 1️⃣ serviceToken =========
 const cookie = headers.Cookie || headers.cookie || "";
@@ -17,15 +16,16 @@ if (tokenMatch) {
   $persistentStore.write(tokenMatch[1], "MI_SERVICE_TOKEN");
 }
 
-// ========= 2️⃣ sign（URL / body） =========
+// ========= 2️⃣ sign =========
 try {
   if (url.includes("/mtop/navi/venue/batch")) {
+    // iOS：sign 在 URL
     const u = new URL(url);
     const signFromUrl = u.searchParams.get("sign");
-
     if (signFromUrl) {
       $persistentStore.write(signFromUrl, "MI_SIGN");
     } else if (body) {
+      // 兼容旧版：sign 在 body
       const data = JSON.parse(body);
       const ql = data?.query_list?.[0];
       if (ql?.sign) {
@@ -35,41 +35,16 @@ try {
   }
 } catch (_) {}
 
-// ========= 3️⃣ actId（最终来源） =========
-try {
-  if (url.includes("/mtop/mf/usercenter/personalHome") && body) {
-    const data = JSON.parse(body);
-
-    // 深度遍历查找 actId
-    const findActId = (obj) => {
-      if (!obj || typeof obj !== "object") return null;
-      if (obj.actId) return obj.actId;
-      for (const k in obj) {
-        const res = findActId(obj[k]);
-        if (res) return res;
-      }
-      return null;
-    };
-
-    const actId = findActId(data);
-    if (actId) {
-      $persistentStore.write(actId, "MI_ACT_ID");
-    }
-  }
-} catch (_) {}
-
-// ========= 通知 =========
+// ========= 通知（只要抓到就提示） =========
 const st = $persistentStore.read("MI_SERVICE_TOKEN");
 const sign = $persistentStore.read("MI_SIGN");
-const actId = $persistentStore.read("MI_ACT_ID");
 
-if (st || sign || actId) {
+if (st || sign) {
   $notification.post(
-    "🛒 小米商城参数抓取成功",
+    "🛒 小米商城参数获取",
     "",
     `serviceToken: ${st ? "✅" : "❌"}\n` +
-    `sign: ${sign ? "✅" : "❌"}\n` +
-    `actId: ${actId || "未抓取"}`
+    `sign: ${sign ? "✅" : "❌"}`
   );
 }
 
