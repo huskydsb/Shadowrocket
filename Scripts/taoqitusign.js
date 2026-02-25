@@ -16,15 +16,15 @@ if (!authorization) {
 }
 
 // 请求参数
-const url = "https://gtm-1003.91tutu.xyz/gateway/tqt/cn/user/sign";
+const url = "https://api-1209.apitutu.com/gateway/tqt/cn/user/sign";
 const headers = {
   "accept-encoding": "gzip, deflate, br",
-  "referer": "https://gtm-1003.91tutu.xyz",
-  "origin": "https://gtm-1003.91tutu.xyz",
+  "referer": "https://vip.taoqitu.pro",
+  "origin": "https://vip.taoqitu.pro",
   "authorization": authorization,
   "sec-fetch-mode": "cors",
   "accept-language": "zh-CN,zh-Hans;q=0.9",
-  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/133.0.6943.33 Mobile/15E148 Safari/604.1",
+  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
   "sec-fetch-dest": "empty",
   "accept": "*/*",
   "sec-fetch-site": "cross-site",
